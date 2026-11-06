@@ -17,7 +17,13 @@ function inBounds(r: number, c: number): boolean {
 }
 
 function neighbors(r: number, c: number): (readonly [number, number])[] {
-  return [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].filter(([nr, nc]) => inBounds(nr, nc));
+  const cells: (readonly [number, number])[] = [
+    [r - 1, c],
+    [r + 1, c],
+    [r, c - 1],
+    [r, c + 1],
+  ];
+  return cells.filter(([nr, nc]) => inBounds(nr, nc));
 }
 
 function untriedCells(grid: CellState[][]): (readonly [number, number])[] {
@@ -48,12 +54,20 @@ export function chooseAiShot(state: AiState, difficulty: Difficulty): readonly [
       const last = sorted[sorted.length - 1];
       if (first[0] === last[0]) {
         const r = first[0];
-        const candidates = [[r, first[1] - 1], [r, last[1] + 1]].filter(([nr, nc]) => inBounds(nr, nc) && targetGrid[nr][nc] === 'empty');
-        if (candidates.length > 0) return candidates[0];
+        const candidates: (readonly [number, number])[] = [
+          [r, first[1] - 1],
+          [r, last[1] + 1],
+        ];
+        const openCandidates = candidates.filter(([nr, nc]) => inBounds(nr, nc) && targetGrid[nr][nc] === 'empty');
+        if (openCandidates.length > 0) return openCandidates[0];
       } else {
         const c = first[1];
-        const candidates = [[first[0] - 1, c], [last[0] + 1, c]].filter(([nr, nc]) => inBounds(nr, nc) && targetGrid[nr][nc] === 'empty');
-        if (candidates.length > 0) return candidates[0];
+        const candidates: (readonly [number, number])[] = [
+          [first[0] - 1, c],
+          [last[0] + 1, c],
+        ];
+        const openCandidates = candidates.filter(([nr, nc]) => inBounds(nr, nc) && targetGrid[nr][nc] === 'empty');
+        if (openCandidates.length > 0) return openCandidates[0];
       }
     }
   }

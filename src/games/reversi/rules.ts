@@ -23,6 +23,10 @@ function inBounds(r: number, c: number): boolean {
   return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
 }
 
+function otherPlayer(player: Player): Player {
+  return player === 0 ? 1 : 0;
+}
+
 function flipsFor(board: Board, row: number, col: number, player: Player): ReversiMove[] {
   const opponent: Player = player === 0 ? 1 : 0;
   const flipped: ReversiMove[] = [];
@@ -50,7 +54,6 @@ export function flipsForMove(board: Board, move: ReversiMove, player: Player): R
 
 export function legalMovesFor(state: ReversiState): ReversiMove[] {
   const moves: ReversiMove[] = [];
-  if (resultOf(state) !== null) return moves;
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       if (state.board[r][c] !== null) continue;
@@ -78,29 +81,13 @@ export function scoreOf(board: Board): readonly [number, number] {
   return countDiscs(board);
 }
 
-function resultOf(state: ReversiState): Winner {
-  const moves = legalMovesFor(state);
-  if (moves.length > 0) return null;
-  if (!state.passed) return null;
-
-  const [p0, p1] = countDiscs(state.board);
-  if (p0 > p1) return 0;
-  if (p1 > p0) return 1;
-  return 'draw';
-}
-
 function applyMoveInternal(state: ReversiState, move: ReversiMove): ReversiState {
   const [row, col] = move;
   const flipped = flipsFor(state.board, row, col, state.turn);
   const board = state.board.map((cells) => [...cells]);
   board[row][col] = state.turn;
   for (const [r, c] of flipped) board[r][c] = state.turn;
-  const nextTurn: Player = state.turn === 0 ? 1 : 0;
-  return { board, turn: nextTurn, passed: false };
-}
-
-function passTurn(state: ReversiState): ReversiState {
-  return { board: state.board, turn: state.turn === 0 ? 1 : 0, passed: true };
+  return { board, turn: otherPlayer(state.turn), passed: false };
 }
 
 export const reversi: GameEngine<ReversiState, ReversiMove> = {
@@ -116,6 +103,7 @@ export const reversi: GameEngine<ReversiState, ReversiMove> = {
   },
   currentPlayer: (state) => state.turn,
   legalMoves: legalMovesFor,
+  movesEqual: (a, b) => a[0] === b[0] && a[1] === b[1],
   applyMove: (state, move) => {
     const legal = legalMovesFor(state);
     if (!legal.some((m) => m[0] === move[0] && m[1] === move[1])) {
@@ -123,15 +111,20 @@ export const reversi: GameEngine<ReversiState, ReversiMove> = {
     }
     return applyMoveInternal(state, move);
   },
-  isTerminal: (state) => {
-    if (legalMovesFor(state).length > 0) return false;
-    const passState = passTurn(state);
-    return legalMovesFor(passState).length === 0;
+  passTurn: (state) => {
+    if (legalMovesFor(state).length > 0 || legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length === 0) {
+      throw new Error('Cannot pass when a legal move is available or the game is over');
+    }
+    return { board: state.board, turn: otherPlayer(state.turn), passed: true };
   },
-  winner: (state) => {
-    if (legalMovesFor(state).length > 0) return null;
-    const passState = passTurn(state);
-    if (legalMovesFor(passState).length > 0) return null;
+  isTerminal: (state) =>
+    legalMovesFor(state).length === 0
+    && legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length === 0,
+  winner: (state): Winner => {
+    if (
+      legalMovesFor(state).length > 0
+      || legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length > 0
+    ) return null;
     const [p0, p1] = countDiscs(state.board);
     if (p0 > p1) return 0;
     if (p1 > p0) return 1;

@@ -6,7 +6,7 @@ export interface SearchOptions<State> {
   timeLimitMs?: number;
 }
 
-const WIN_SCORE = 1000;
+const WIN_SCORE = 1_000_000_000;
 
 class SearchTimeout extends Error {}
 
@@ -38,12 +38,17 @@ function search<State, Move>(
     return result === engine.currentPlayer(state) ? score : -score;
   }
 
+  const moves = searchMoves(engine, state);
+  if (moves.length === 0) {
+    if (engine.passTurn) {
+      return -search(engine, engine.passTurn(state), Math.max(0, depth - 1), -beta, -alpha, ply + 1, context);
+    }
+    return 0;
+  }
+
   if (depth <= 0) {
     return context.evaluate ? context.evaluate(state, engine.currentPlayer(state)) : 0;
   }
-
-  const moves = searchMoves(engine, state);
-  if (moves.length === 0) return 0;
 
   let best = -Infinity;
   for (const move of moves) {

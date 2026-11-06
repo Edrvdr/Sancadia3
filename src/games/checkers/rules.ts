@@ -18,7 +18,7 @@ export interface CheckersMove {
   readonly captures: readonly (readonly [number, number])[];
 }
 
-const FORWARD: Record<Player, readonly number[]> = { 0: [1], 1: [-1] };
+const FORWARD: Record<Player, readonly number[]> = { 0: [-1], 1: [1] };
 const ALL_ROWS = [-1, 1];
 
 function inBounds(r: number, c: number): boolean {
@@ -37,34 +37,6 @@ function pieceRows(piece: PieceType, player: Player): readonly number[] {
   return piece === 'king' ? ALL_ROWS : FORWARD[player];
 }
 
-function singleJumps(
-  board: Board,
-  row: number,
-  col: number,
-  piece: PieceType,
-  player: Player
-): CheckersMove[] {
-  const moves: CheckersMove[] = [];
-  for (const dr of pieceRows(piece, player)) {
-    for (const dc of [-1, 1]) {
-      const midR = row + dr;
-      const midC = col + dc;
-      const landR = row + dr * 2;
-      const landC = col + dc * 2;
-      if (!inBounds(landR, landC)) continue;
-      const mid = board[midR][midC];
-      if (mid === null || mid.player === player) continue;
-      if (board[landR][landC] !== null) continue;
-      moves.push({
-        from: [row, col],
-        to: [landR, landC],
-        captures: [[midR, midC]],
-      });
-    }
-  }
-  return moves;
-}
-
 function deepJumps(
   board: Board,
   startR: number,
@@ -76,7 +48,6 @@ function deepJumps(
   captured: readonly (readonly [number, number])[]
 ): CheckersMove[] {
   const results: CheckersMove[] = [];
-  let extended = false;
   for (const dr of pieceRows(piece, player)) {
     for (const dc of [-1, 1]) {
       const midR = row + dr;
@@ -86,13 +57,12 @@ function deepJumps(
       if (!inBounds(landR, landC)) continue;
       const mid = board[midR][midC];
       if (mid === null || mid.player === player) continue;
-      if (captured.some(([cr, cc]) => cr === midR && cc === midC)) continue;
       if (board[landR][landC] !== null) continue;
-      if (!(landR === startR && landC === startC) && board[landR][landC] !== null) continue;
 
       const tempBoard = cloneBoard(board);
+      tempBoard[row][col] = null;
       tempBoard[midR][midC] = null;
-      extended = true;
+      tempBoard[landR][landC] = { player, type: piece };
       const newCaptured = [...captured, [midR, midC] as const];
       const deeper = deepJumps(
         tempBoard,
@@ -110,9 +80,6 @@ function deepJumps(
         results.push(...deeper);
       }
     }
-  }
-  if (!extended && captured.length > 0) {
-    results.push({ from: [startR, startC], to: [row, col], captures });
   }
   return results;
 }
@@ -189,8 +156,8 @@ export function legalMovesFor(state: CheckersState): CheckersMove[] {
 function maybePromote(occupant: Occupant, row: number): Occupant {
   if (occupant === null) return null;
   if (occupant.type === 'king') return occupant;
-  if (occupant.player === 0 && row === SIZE - 1) return { player: occupant.player, type: 'king' };
-  if (occupant.player === 1 && row === 0) return { player: occupant.player, type: 'king' };
+  if (occupant.player === 0 && row === 0) return { player: occupant.player, type: 'king' };
+  if (occupant.player === 1 && row === SIZE - 1) return { player: occupant.player, type: 'king' };
   return occupant;
 }
 
@@ -236,6 +203,13 @@ export function applyMoveInternal(state: CheckersState, move: CheckersMove): Che
   return { board, turn: nextTurn, mustContinueFrom: null };
 }
 
+export function movesEqual(a: CheckersMove, b: CheckersMove): boolean {
+  if (a.from[0] !== b.from[0] || a.from[1] !== b.from[1]) return false;
+  if (a.to[0] !== b.to[0] || a.to[1] !== b.to[1]) return false;
+  if (a.captures.length !== b.captures.length) return false;
+  return a.captures.every((ca, i) => ca[0] === b.captures[i][0] && ca[1] === b.captures[i][1]);
+}
+
 export const checkers: GameEngine<CheckersState, CheckersMove> = {
   id: 'checkers',
   initialState: () => {
@@ -251,6 +225,7 @@ export const checkers: GameEngine<CheckersState, CheckersMove> = {
   },
   currentPlayer: (state) => state.turn,
   legalMoves: legalMovesFor,
+  movesEqual,
   applyMove: (state, move) => {
     if (!legalMovesFor(state).some((m) => movesEqual(m, move))) {
       throw new Error('Illegal move');
@@ -260,10 +235,3 @@ export const checkers: GameEngine<CheckersState, CheckersMove> = {
   isTerminal: (state) => resultOf(state) !== null,
   winner: (state) => resultOf(state),
 };
-
-function movesEqual(a: CheckersMove, b: CheckersMove): boolean {
-  if (a.from[0] !== b.from[0] || a.from[1] !== b.from[1]) return false;
-  if (a.to[0] !== b.to[0] || a.to[1] !== b.to[1]) return false;
-  if (a.captures.length !== b.captures.length) return false;
-  return a.captures.every((ca, i) => ca[0] === b.captures[i][0] && ca[1] === b.captures[i][1]);
-}

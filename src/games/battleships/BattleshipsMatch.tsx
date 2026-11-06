@@ -1,5 +1,5 @@
-import { useState, type CSSProperties } from 'react';
-import { Crosshair, RotateCcw, Shuffle, Anchor } from 'lucide-react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
+import { Anchor, Crosshair, RotateCcw, Shuffle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import GameOverDialog from '@/components/GameOverDialog';
@@ -8,8 +8,9 @@ import ThinkingDots from '@/components/ThinkingDots';
 import type { MatchConfig } from '@/games/matchConfig';
 import { describeResult, scoreEntries, statusText } from '@/games/matchOutcome';
 import { useSettings } from '@/hooks/useSettings';
-import { vibrate, HAPTICS } from '@/lib/haptics';
+import { HAPTICS, vibrate } from '@/lib/haptics';
 import {
+  SHIP_NAMES,
   SHIP_SIZES,
   SIZE,
   allShipsSunk,
@@ -20,13 +21,23 @@ import {
   shoot,
   shipsRemaining,
   type CellState,
+  type Grid,
   type Orientation,
   type ShipPlacement,
 } from '@/games/battleships/rules';
-import { createAiState, chooseAiShot, updateAiState, type AiState } from '@/games/battleships/ai';
+import { chooseAiShot, createAiState, updateAiState, type AiState } from '@/games/battleships/ai';
 
-type Phase = 'setup' | 'play';
 type Player = 0 | 1;
+type Fleets = [Grid, Grid];
+type ShipFleets = [ShipPlacement[], ShipPlacement[]];
+
+function otherPlayer(player: Player): Player {
+  return player === 0 ? 1 : 0;
+}
+
+function replacePlayer<T>(pair: [T, T], player: Player, value: T): [T, T] {
+  return player === 0 ? [value, pair[1]] : [pair[0], value];
+}
 
 const cellColor = (cell: CellState, showShips: boolean): string => {
   if (cell === 'hit') return 'bg-danger text-danger-foreground';
@@ -40,14 +51,12 @@ function Grid2D({
   showShips,
   onCellTap,
   disabled,
-  highlight,
   label,
 }: {
-  grid: CellState[][];
+  grid: Grid;
   showShips: boolean;
   onCellTap?: (row: number, col: number) => void;
   disabled?: boolean;
-  highlight?: readonly [number, number] | null;
   label: string;
 }) {
   return (
@@ -61,17 +70,17 @@ function Grid2D({
         const row = Math.floor(index / SIZE);
         const col = index % SIZE;
         const cell = grid[row][col];
-        const isHighlight = highlight && highlight[0] === row && highlight[1] === col;
         return (
           <button
             key={index}
             type="button"
             disabled={disabled}
+            aria-label={`${label}, row ${row + 1}, column ${col + 1}${cell === 'hit' ? ', hit' : cell === 'miss' ? ', miss' : ''}`}
             onClick={onCellTap ? () => onCellTap(row, col) : undefined}
             className={`relative flex aspect-square min-h-8 items-center justify-center rounded transition duration-150 ${cellColor(
               cell,
               showShips
-            )} ${isHighlight ? 'ring-2 ring-primary' : ''} ${
+            )} ${
               !disabled && onCellTap && cell === 'empty' ? 'cursor-pointer hover:brightness-110' : ''
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
           >
@@ -88,38 +97,44 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const { settings } = useSettings();
   const vibrationEnabled = settings.vibrationEnabled;
+  const isComputer = config.mode === 'computer';
+  const humanSide: Player = config.mode === 'computer' && !config.humanFirst ? 1 : 0;
+  const computerSide = otherPlayer(humanSide);
 
-  const [phase, setPhase] = useState<Phase>('setup');
-  const [playerGrid, setPlayerGrid] = useState<CellState[][]>(emptyGrid);
-  const [playerShips, setPlayerShips] = useState<ShipPlacement[]>([]);
-  const [enemyGrid, setEnemyGrid] = useState<CellState[][]>(emptyGrid);
-  const [enemyShips, setEnemyShips] = useState<ShipPlacement[]>([]);
+  const [phase, setPhase] = useState<'setup' | 'play'>('setup');
+  const [grids, setGrids] = useState<Fleets>(() => [emptyGrid(), emptyGrid()]);
+  const [fleets, setFleets] = useState<ShipFleets>(() => [[], []]);
   const [aiState, setAiState] = useState<AiState | null>(null);
   const [turn, setTurn] = useState<Player>(0);
   const [result, setResult] = useState<Player | 'draw' | null>(null);
   const [scores, setScores] = useState({ 0: 0, 1: 0, draws: 0 });
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [setupPlayer, setSetupPlayer] = useState<Player>(humanSide);
   const [placingIndex, setPlacingIndex] = useState(0);
   const [orientation, setOrientation] = useState<Orientation>('horizontal');
   const [hoverCell, setHoverCell] = useState<[number, number] | null>(null);
 
-  const isComputer = config.mode === 'computer';
-  const humanSide: Player = isComputer && !config.humanFirst ? 1 : 0;
-  const computerSide: Player = humanSide === 0 ? 1 : 0;
-
   const over = result !== null;
   const computerTurn = isComputer && !over && turn === computerSide;
+  const setupGrid = grids[setupPlayer];
+  const setupShips = fleets[setupPlayer];
+  const allPlaced = placingIndex >= SHIP_SIZES.length || setupShips.length === SHIP_SIZES.length;
+
+  const finishMatch = useCallback((winner: Player) => {
+    setResult(winner);
+    setScores((current) => ({ ...current, [winner]: current[winner] + 1 }));
+    setDialogOpen(true);
+  }, []);
 
   const restart = () => {
     setPhase('setup');
-    setPlayerGrid(emptyGrid());
-    setPlayerShips([]);
-    setEnemyGrid(emptyGrid());
-    setEnemyShips([]);
+    setGrids([emptyGrid(), emptyGrid()]);
+    setFleets([[], []]);
     setAiState(null);
     setTurn(0);
     setResult(null);
+    setSetupPlayer(humanSide);
     setPlacingIndex(0);
     setOrientation('horizontal');
     setHoverCell(null);
@@ -127,133 +142,135 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
   };
 
   const randomize = () => {
-    const { grid, ships } = randomPlacement();
-    setPlayerGrid(grid);
-    setPlayerShips(ships);
+    const placement = randomPlacement();
+    setGrids((current) => replacePlayer(current, setupPlayer, placement.grid));
+    setFleets((current) => replacePlayer(current, setupPlayer, placement.ships));
     setPlacingIndex(SHIP_SIZES.length);
   };
 
-  const startGame = () => {
-    const enemy = randomPlacement();
-    setEnemyGrid(enemy.grid);
-    setEnemyShips(enemy.ships);
+  const startBattle = () => {
     if (isComputer) {
-      setAiState(createAiState(enemy.ships));
+      if (fleets[humanSide].length !== SHIP_SIZES.length) return;
+      const enemy = randomPlacement();
+      setGrids((current) => replacePlayer(current, computerSide, enemy.grid));
+      setFleets((current) => replacePlayer(current, computerSide, enemy.ships));
+      setAiState(createAiState(fleets[humanSide]));
+      setTurn(config.mode === 'computer' && !config.humanFirst ? computerSide : humanSide);
+    } else {
+      if (fleets[0].length !== SHIP_SIZES.length || fleets[1].length !== SHIP_SIZES.length) return;
+      setTurn(0);
     }
     setPhase('play');
-    setTurn(0);
     vibrate(vibrationEnabled, HAPTICS.move);
   };
 
+  const advanceSetup = () => {
+    if (!allPlaced) return;
+    if (!isComputer && setupPlayer === 0) {
+      setSetupPlayer(1);
+      setPlacingIndex(fleets[1].length);
+      setOrientation('horizontal');
+      setHoverCell(null);
+      return;
+    }
+    startBattle();
+  };
+
   const handleSetupCellTap = (row: number, col: number) => {
-    if (placingIndex >= SHIP_SIZES.length) return;
+    if (allPlaced) return;
     const size = SHIP_SIZES[placingIndex];
-    if (!canPlace(playerGrid, row, col, size, orientation === 'horizontal')) return;
-    const next = placeShip(playerGrid, row, col, size, orientation === 'horizontal');
-    setPlayerGrid(next);
-    setPlayerShips([...playerShips, { row, col, size, horizontal: orientation === 'horizontal' }]);
-    setPlacingIndex((i) => i + 1);
+    const horizontal = orientation === 'horizontal';
+    if (!canPlace(setupGrid, row, col, size, horizontal)) return;
+    setGrids((current) => replacePlayer(current, setupPlayer, placeShip(setupGrid, row, col, size, horizontal)));
+    setFleets((current) =>
+      replacePlayer(current, setupPlayer, [...setupShips, { row, col, size, horizontal }])
+    );
+    setPlacingIndex((index) => index + 1);
   };
 
   const handleAttack = (row: number, col: number) => {
-    if (over || computerTurn) return;
-    if (enemyGrid[row][col] === 'hit' || enemyGrid[row][col] === 'miss') return;
+    if (phase !== 'play' || over || computerTurn) return;
+    const targetPlayer = isComputer ? computerSide : otherPlayer(turn);
+    const targetGrid = grids[targetPlayer];
+    if (targetGrid[row][col] === 'hit' || targetGrid[row][col] === 'miss') return;
 
-    const { grid, result: shotResult } = shoot(enemyGrid, enemyShips, row, col);
-    setEnemyGrid(grid);
-    vibrate(vibrationEnabled, shotResult.hit ? HAPTICS.gameEnd : HAPTICS.move);
+    const shot = shoot(targetGrid, fleets[targetPlayer], row, col);
+    setGrids((current) => replacePlayer(current, targetPlayer, shot.grid));
+    vibrate(vibrationEnabled, shot.result.sunk ? HAPTICS.gameEnd : HAPTICS.move);
 
-    if (allShipsSunk(grid)) {
-      setResult(humanSide);
-      setScores((s) => ({ ...s, [humanSide]: s[humanSide] + 1 }));
-      setDialogOpen(true);
+    if (allShipsSunk(shot.grid)) {
+      finishMatch(isComputer ? humanSide : turn);
       return;
     }
-
-    const nextTurn: Player = turn === 0 ? 1 : 0;
-    setTurn(nextTurn);
+    setTurn(otherPlayer(turn));
   };
 
-  // AI shooting
-  const handleAiShot = () => {
-    if (!aiState || !isComputer) return;
+  const handleAiShot = useCallback(() => {
+    if (config.mode !== 'computer' || !aiState || !computerTurn) return;
     const shot = chooseAiShot(aiState, config.difficulty);
-    const { grid, result: shotResult } = shoot(playerGrid, playerShips, shot[0], shot[1]);
-    setPlayerGrid(grid);
-    const sunk = shotResult.sunk;
-    const nextAi = updateAiState(aiState, shot, shotResult.hit ? 'hit' : 'miss', sunk);
-    setAiState(nextAi);
-    vibrate(vibrationEnabled, shotResult.hit ? HAPTICS.gameEnd : HAPTICS.move);
+    const attackedGrid = grids[humanSide];
+    const outcome = shoot(attackedGrid, fleets[humanSide], shot[0], shot[1]);
+    setGrids((current) => replacePlayer(current, humanSide, outcome.grid));
+    setAiState(updateAiState(aiState, shot, outcome.result.hit ? 'hit' : 'miss', outcome.result.sunk));
+    vibrate(vibrationEnabled, outcome.result.sunk ? HAPTICS.gameEnd : HAPTICS.move);
 
-    if (allShipsSunk(grid)) {
-      setResult(computerSide);
-      setScores((s) => ({ ...s, [computerSide]: s[computerSide] + 1 }));
-      setDialogOpen(true);
+    if (allShipsSunk(outcome.grid)) {
+      finishMatch(computerSide);
       return;
     }
     setTurn(humanSide);
-  };
+  }, [aiState, computerSide, computerTurn, config, finishMatch, fleets, grids, humanSide, vibrationEnabled]);
 
-  // trigger AI shot
-  if (computerTurn) {
-    setTimeout(() => {
-      if (phase === 'play' && !over && turn === computerSide) {
-        handleAiShot();
-      }
-    }, 600 + Math.random() * 400);
-  }
+  useEffect(() => {
+    if (phase !== 'play' || !computerTurn) return;
+    const timer = window.setTimeout(handleAiShot, 600 + Math.random() * 400);
+    return () => window.clearTimeout(timer);
+  }, [computerTurn, handleAiShot, phase]);
 
   const summary = result === null ? null : describeResult(result, config, humanSide);
-  const allPlaced = placingIndex >= SHIP_SIZES.length;
-  const canStart = allPlaced || playerShips.length === SHIP_SIZES.length;
 
-  // SETUP PHASE
   if (phase === 'setup') {
+    const currentShip = allPlaced ? null : `${SHIP_NAMES[placingIndex]} (${SHIP_SIZES[placingIndex]})`;
+    const canStart = isComputer ? fleets[humanSide].length === SHIP_SIZES.length : allPlaced;
+
     return (
       <div className="flex flex-1 flex-col gap-4">
+        <h2 className="text-lg font-bold">
+          {isComputer ? 'Place your fleet' : `Player ${setupPlayer + 1} — place your fleet`}
+        </h2>
+        {!isComputer && setupPlayer === 1 && (
+          <p className="text-sm text-subtle">Pass the device to Player 2 before placing their ships.</p>
+        )}
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">Place your fleet</h2>
+          <p className="text-sm text-subtle">
+            {allPlaced ? 'Fleet ready!' : `Place ${currentShip}`}
+          </p>
           <button
             type="button"
             onClick={randomize}
-            className="flex items-center gap-1.5 rounded-xl bg-primary-soft px-3 py-2 text-sm font-semibold text-primary transition hover:brightness-95 active:scale-95"
+            className="flex min-h-11 items-center gap-1.5 rounded-xl bg-primary-soft px-3 py-2 text-sm font-semibold text-primary transition hover:brightness-95 active:scale-95"
           >
             <Shuffle className="h-4 w-4" aria-hidden="true" />
             Random
           </button>
         </div>
 
-        <p className="text-sm text-subtle">
-          {allPlaced
-            ? 'Fleet ready! Tap Start to battle.'
-            : `Placing ${['Carrier (5)', 'Battleship (4)', 'Cruiser (3)', 'Submarine (3)', 'Destroyer (2)'][placingIndex]}`}
-        </p>
-
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setOrientation('horizontal')}
-            className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-              orientation === 'horizontal' ? 'bg-primary text-primary-foreground' : 'bg-surface ring-1 ring-border'
-            }`}
-          >
-            Horizontal
-          </button>
-          <button
-            type="button"
-            onClick={() => setOrientation('vertical')}
-            className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
-              orientation === 'vertical' ? 'bg-primary text-primary-foreground' : 'bg-surface ring-1 ring-border'
-            }`}
-          >
-            Vertical
-          </button>
+          {(['horizontal', 'vertical'] as const).map((direction) => (
+            <button
+              key={direction}
+              type="button"
+              onClick={() => setOrientation(direction)}
+              className={`min-h-11 flex-1 rounded-xl text-sm font-semibold transition ${
+                orientation === direction ? 'bg-primary text-primary-foreground' : 'bg-surface ring-1 ring-border'
+              }`}
+            >
+              {direction === 'horizontal' ? 'Horizontal' : 'Vertical'}
+            </button>
+          ))}
         </div>
 
-        <div
-          className="flex justify-center"
-          onPointerLeave={() => setHoverCell(null)}
-        >
+        <div className="flex justify-center" onPointerLeave={() => setHoverCell(null)}>
           <div
             className="grid gap-1 rounded-2xl bg-board-line p-1.5 shadow-lg"
             style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` } as CSSProperties}
@@ -261,16 +278,16 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
             {Array.from({ length: SIZE * SIZE }, (_, index) => {
               const row = Math.floor(index / SIZE);
               const col = index % SIZE;
-              const cell = playerGrid[row][col];
-              const isHover = hoverCell && hoverCell[0] === row && hoverCell[1] === col;
+              const cell = setupGrid[row][col];
+              const isHover = hoverCell?.[0] === row && hoverCell[1] === col;
               const size = allPlaced ? 0 : SHIP_SIZES[placingIndex];
-              const canFit = !allPlaced && canPlace(playerGrid, row, col, size, orientation === 'horizontal');
-              const previewCells = new Set<string>();
-              if (isHover && !allPlaced && canFit) {
-                for (let i = 0; i < size; i++) {
-                  const r = orientation === 'horizontal' ? row : row + i;
-                  const c = orientation === 'horizontal' ? col + i : col;
-                  previewCells.add(`${r},${c}`);
+              const canFit = !allPlaced && canPlace(setupGrid, row, col, size, orientation === 'horizontal');
+              const preview = new Set<string>();
+              if (isHover && canFit) {
+                for (let offset = 0; offset < size; offset++) {
+                  const r = orientation === 'horizontal' ? row : row + offset;
+                  const c = orientation === 'horizontal' ? col + offset : col;
+                  preview.add(`${r},${c}`);
                 }
               }
               return (
@@ -278,11 +295,12 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
                   key={index}
                   type="button"
                   disabled={allPlaced}
+                  aria-label={`Place at row ${row + 1}, column ${col + 1}`}
                   onClick={() => handleSetupCellTap(row, col)}
                   onPointerEnter={() => setHoverCell([row, col])}
                   className={`relative flex aspect-square min-h-8 items-center justify-center rounded transition ${
                     cell === 'ship' ? 'bg-primary' : 'bg-board-light'
-                  } ${previewCells.has(`${row},${col}`) ? 'bg-primary/40' : ''} ${
+                  } ${preview.has(`${row},${col}`) ? 'bg-primary/40' : ''} ${
                     isHover && !canFit && !allPlaced ? 'bg-danger/20' : ''
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
                 >
@@ -293,16 +311,18 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
           </div>
         </div>
 
-        <Button disabled={!canStart} onClick={startGame} className="mt-auto">
-          Start battle
+        <Button disabled={!canStart} onClick={advanceSetup} className="mt-auto">
+          {!isComputer && setupPlayer === 0 ? 'Continue to Player 2' : 'Start battle'}
         </Button>
       </div>
     );
   }
 
-  // PLAY PHASE
-  const myShipsLeft = shipsRemaining(playerGrid, playerShips);
-  const enemyShipsLeft = shipsRemaining(enemyGrid, enemyShips);
+  const targetPlayer = isComputer ? computerSide : otherPlayer(turn);
+  const activePlayer = isComputer ? humanSide : turn;
+  const myShipsLeft = shipsRemaining(grids[activePlayer], fleets[activePlayer]);
+  const targetShipsLeft = shipsRemaining(grids[targetPlayer], fleets[targetPlayer]);
+  const targetLabel = isComputer ? 'Enemy waters' : `Player ${targetPlayer + 1} waters`;
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -314,7 +334,7 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
           Your fleet: {myShipsLeft}
         </span>
         <span className="flex items-center gap-1.5 text-sm font-semibold">
-          Enemy: {enemyShipsLeft}
+          Opponent: {targetShipsLeft}
           <Anchor className="h-4 w-4 text-accent" aria-hidden="true" />
         </span>
       </div>
@@ -325,19 +345,21 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <p className="text-center text-sm font-semibold text-subtle">Enemy waters — tap to fire</p>
+        <p className="text-center text-sm font-semibold text-subtle">
+          {computerTurn ? 'Opponent waters' : `${targetLabel} — tap to fire`}
+        </p>
         <Grid2D
-          grid={enemyGrid}
+          grid={grids[targetPlayer]}
           showShips={false}
           onCellTap={handleAttack}
           disabled={computerTurn || over}
-          label="Enemy waters"
+          label={targetLabel}
         />
       </div>
 
       <div className="flex flex-col gap-2">
         <p className="text-center text-sm font-semibold text-subtle">Your fleet</p>
-        <Grid2D grid={playerGrid} showShips label="Your fleet" disabled />
+        <Grid2D grid={grids[activePlayer]} showShips disabled label={`Player ${activePlayer + 1} fleet`} />
       </div>
 
       <Button variant="secondary" onClick={restart}>
@@ -353,13 +375,9 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
           message={summary.message}
           onPlayAgain={restart}
           onBackToMenu={() => navigate('/games')}
-          onClose={match_closeDialog(setDialogOpen)}
+          onClose={() => setDialogOpen(false)}
         />
       )}
     </div>
   );
-}
-
-function match_closeDialog(setDialogOpen: (v: boolean) => void) {
-  return () => setDialogOpen(false);
 }

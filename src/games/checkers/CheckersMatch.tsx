@@ -10,7 +10,6 @@ import {
   SIZE,
   checkers,
   legalMovesFor,
-  type CheckersMove,
 } from '@/games/checkers/rules';
 import type { MatchConfig } from '@/games/matchConfig';
 import { describeResult, scoreEntries, statusText } from '@/games/matchOutcome';
@@ -36,7 +35,7 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
     ? allLegal.filter((m) => samePos(m.from, selected[0], selected[1]))
     : [];
 
-  const destinations = new Set(movesFromSelected.map((m) => `${m.to[0]},${m.to[1]}`)));
+  const destinations = new Set(movesFromSelected.map((m) => `${m.to[0]},${m.to[1]}`));
 
   const handleCellTap = (row: number, col: number) => {
     if (computerTurn || over) return;

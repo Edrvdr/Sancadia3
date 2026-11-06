@@ -26,6 +26,7 @@ export function canPlace(
   size: number,
   horizontal: boolean
 ): boolean {
+  if (!Number.isInteger(row) || !Number.isInteger(col) || !Number.isInteger(size) || size <= 0) return false;
   for (let i = 0; i < size; i++) {
     const r = horizontal ? row : row + i;
     const c = horizontal ? col + i : col;
@@ -36,12 +37,15 @@ export function canPlace(
 }
 
 export function placeShip(
-  grid: CellState[][],
+  grid: Grid,
   row: number,
   col: number,
   size: number,
   horizontal: boolean
 ): CellState[][] {
+  if (!canPlace(grid, row, col, size, horizontal)) {
+    throw new Error('Cannot place ship at the requested position');
+  }
   const next = grid.map((r) => [...r]);
   for (let i = 0; i < size; i++) {
     const r = horizontal ? row : row + i;
@@ -71,6 +75,7 @@ export function randomPlacement(): { grid: CellState[][]; ships: ShipPlacement[]
         placed = true;
       }
     }
+    if (!placed) throw new Error(`Could not place ship of size ${size}`);
   }
   return { grid, ships };
 }
@@ -81,10 +86,13 @@ export interface ShootResult {
   shipIndex: number | null;
 }
 
-export function shoot(grid: CellState[][], ships: ShipPlacement[], row: number, col: number): {
+export function shoot(grid: Grid, ships: ShipPlacement[], row: number, col: number): {
   grid: CellState[][];
   result: ShootResult;
 } {
+  if (!Number.isInteger(row) || !Number.isInteger(col) || row < 0 || row >= SIZE || col < 0 || col >= SIZE) {
+    throw new Error(`Shot is outside the board: ${row},${col}`);
+  }
   const next = grid.map((r) => [...r]);
   const cell = next[row][col];
   if (cell === 'hit' || cell === 'miss') {

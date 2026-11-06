@@ -1,6 +1,10 @@
 import type { ComponentType } from 'react';
 import TicTacToeGame from '@/games/tictactoe/TicTacToeGame';
 import Connect4Game from '@/games/connect4/Connect4Game';
+import GomokuMatch from '@/games/gomoku/GomokuMatch';
+import ReversiGame from '@/games/reversi/ReversiGame';
+import CheckersGame from '@/games/checkers/CheckersGame';
+import BattleshipsGame from '@/games/battleships/BattleshipsGame';
 
 export type GameStatus = 'available' | 'coming-soon';
 
@@ -49,7 +53,7 @@ export const games: GameInfo[] = [
     minPlayers: 2,
     maxPlayers: 2,
     icon: '⚪',
-    status: 'coming-soon',
+    status: 'available',
   },
   {
     id: 'checkers',
@@ -58,7 +62,7 @@ export const games: GameInfo[] = [
     minPlayers: 2,
     maxPlayers: 2,
     icon: '🏁',
-    status: 'coming-soon',
+    status: 'available',
   },
   {
     id: 'battleships',
@@ -67,11 +71,15 @@ export const games: GameInfo[] = [
     minPlayers: 2,
     maxPlayers: 2,
     icon: '🚢',
-    status: 'coming-soon',
+    status: 'available',
   },
 ];
 
 export const gameComponents: Partial<Record<string, ComponentType>> = {
   'noughts-and-crosses': TicTacToeGame,
   'connect-4': Connect4Game,
+  gomoku: GomokuMatch,
+  reversi: ReversiGame,
+  checkers: CheckersGame,
+  battleships: BattleshipsGame,
 };

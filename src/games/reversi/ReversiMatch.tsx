@@ -27,10 +27,6 @@ export default function ReversiMatch({ config }: { config: MatchConfig }) {
   const [score0, score1] = scoreOf(state.board);
   const summary = result === null ? null : describeResult(result, config, humanSide);
 
-  const labels = config.mode === 'two-player'
-    ? ['Player 1', 'Player 2']
-    : turn === humanSide ? ['You', 'Computer'] : ['Computer', 'You'];
-
   return (
     <div className="flex flex-1 flex-col gap-6">
       <Scoreboard entries={scoreEntries(config, humanSide, scores)} />

@@ -56,9 +56,15 @@ export function useEngineMatch<State, Move>({ engine, config, chooseMove }: Engi
     return () => window.clearTimeout(timer);
   }, [chooseMove, commit, computerTurn, difficulty, engine, state]);
 
+  useEffect(() => {
+    if (over || !engine.passTurn || engine.legalMoves(state).length > 0) return;
+    commit(engine.passTurn(state));
+  }, [commit, engine, over, state]);
+
   const playMove = (move: Move) => {
     if (computerTurn || over) return;
-    if (!engine.legalMoves(state).includes(move)) return;
+    const legal = engine.legalMoves(state);
+    if (!legal.some((candidate) => engine.movesEqual?.(candidate, move) ?? Object.is(candidate, move))) return;
     commit(engine.applyMove(state, move));
   };
 

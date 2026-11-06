@@ -11,14 +11,13 @@ const MAN_VALUE = 100;
 const KING_VALUE = 175;
 
 export function evaluate(state: CheckersState, player: Player): number {
-  const opponent: Player = player === 0 ? 1 : 0;
   let score = 0;
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       const occ: Occupant = state.board[r][c];
       if (occ === null) continue;
       const base = occ.type === 'king' ? KING_VALUE : MAN_VALUE;
-      let positional = occ.type === 'man' ? (occ.player === 0 ? r * 2 : (SIZE - 1 - r) * 2) : 0;
+      const positional = occ.type === 'man' ? (occ.player === 0 ? (SIZE - 1 - r) * 2 : r * 2) : 0;
       const centerBonus = c >= 2 && c <= 5 ? 3 : 0;
       const total = base + positional + centerBonus;
       if (occ.player === player) score += total;

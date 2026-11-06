@@ -10,6 +10,8 @@ export interface GameEngine<State, Move> {
   applyMove(state: State, move: Move): State;
   isTerminal(state: State): boolean;
   winner(state: State): Winner;
+  movesEqual?(a: Move, b: Move): boolean;
+  passTurn?(state: State): State;
   orderMoves?(state: State, moves: Move[]): Move[];
   candidateMoves?(state: State): Move[];
 }

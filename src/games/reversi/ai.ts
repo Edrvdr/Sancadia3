@@ -7,7 +7,7 @@ const DEPTH_CAPS = {
   timeLimitMs: 1200,
 };
 
-const WEIGHTS: readonly (readonly number[]) = [
+const WEIGHTS: readonly (readonly number[])[] = [
   [100, -20, 10,  5,  5, 10, -20, 100],
   [-20, -50, -2, -2, -2, -2, -50, -20],
   [ 10,  -2,  1,  1,  1,  1,  -2,  10],

@@ -9,6 +9,8 @@ interface GameBoardProps {
   onCellEnter?: (row: number, col: number) => void;
   onBoardLeave?: () => void;
   disabled?: boolean;
+  gridClassName?: string;
+  cellClassName?: string;
 }
 
 export default function GameBoard({
@@ -20,13 +22,18 @@ export default function GameBoard({
   onCellEnter,
   onBoardLeave,
   disabled = false,
+  gridClassName = '',
+  cellClassName = '',
 }: GameBoardProps) {
+  const defaultGridClass = gridClassName ? '' : 'gap-2 rounded-3xl p-2';
+  const defaultCellClass = cellClassName ? '' : 'min-h-11 rounded-2xl text-5xl';
+
   return (
     <div
       role="group"
       aria-label={label}
       onPointerLeave={onBoardLeave}
-      className="grid gap-2 rounded-3xl bg-board-line p-2 shadow-lg"
+      className={`grid bg-board-line shadow-lg ${defaultGridClass} ${gridClassName}`}
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
     >
       {Array.from({ length: rows * cols }, (_, index) => {
@@ -39,7 +46,7 @@ export default function GameBoard({
             disabled={disabled}
             onClick={() => onCellTap(row, col)}
             onPointerEnter={onCellEnter ? () => onCellEnter(row, col) : undefined}
-            className="relative flex aspect-square min-h-11 items-center justify-center rounded-2xl bg-board-light text-5xl font-bold transition duration-200 hover:bg-board-dark/40 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:hover:bg-board-light disabled:active:scale-100"
+            className={`relative flex aspect-square items-center justify-center bg-board-light font-bold transition duration-200 hover:bg-board-dark/40 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:hover:bg-board-light disabled:active:scale-100 ${defaultCellClass} ${cellClassName}`}
           >
             {renderCell(row, col)}
           </button>
