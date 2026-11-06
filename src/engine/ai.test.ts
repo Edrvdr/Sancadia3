@@ -197,5 +197,26 @@ describe('getBestMove options', () => {
     const engine = makeTreeEngine(deepTree);
     expect(getBestMove(engine, engine.initialState(), { maxDepth: 2, timeLimitMs: 0 })).toBe('a');
   });
-});
 
+  it('searches through a forced pass to find the following move', () => {
+    const tree: Record<string, TreeNode> = {
+      root: { children: { draw: 'drawn', advance: 'blocked' } },
+      drawn: { children: {}, winner: 'draw' },
+      blocked: { children: {} },
+      ready: { children: { win: 'won' } },
+      won: { children: {}, winner: 0 },
+    };
+    const base = makeTreeEngine(tree);
+    const engine: GameEngine<TreeState, string> = {
+      ...base,
+      legalMoves: (state) => (state.id === 'blocked' ? [] : Object.keys(tree[state.id].children)),
+      passTurn: (state) => ({ id: 'ready', player: state.player === 0 ? 1 : 0 }),
+      applyMove: (state, move) => ({
+        id: tree[state.id].children[move],
+        player: state.player === 0 ? 1 : 0,
+      }),
+    };
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    expect(getBestMove(engine, engine.initialState(), { maxDepth: 3 })).toBe('advance');
+  });
+});

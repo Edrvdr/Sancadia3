@@ -75,6 +75,11 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
         cols={SIZE}
         disabled={computerTurn || over}
         onCellTap={selectCell}
+        getCellLabel={(row, col) => {
+          const owner = state.board[row][col];
+          const piece = owner === null ? 'Empty' : owner === 0 ? 'Black stone' : 'White stone';
+          return `${piece}, row ${row + 1}, column ${col + 1}`;
+        }}
         gridClassName="gap-0.5 rounded-xl p-1"
         cellClassName="min-h-0 rounded-sm"
         renderCell={(row, col) => {

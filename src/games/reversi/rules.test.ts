@@ -91,4 +91,16 @@ describe('passing and terminal results', () => {
     board[0][0] = 1;
     expect(reversi.winner(stateWith(board))).toBe(1);
   });
+
+  it('can finish a full match while automatically passing blocked turns', () => {
+    let state = reversi.initialState();
+    for (let turn = 0; turn < SIZE * SIZE * 2 && !reversi.isTerminal(state); turn++) {
+      const moves = legalMovesFor(state);
+      state = moves.length === 0
+        ? reversi.passTurn?.(state) ?? state
+        : reversi.applyMove(state, moves[0]);
+    }
+    expect(reversi.isTerminal(state)).toBe(true);
+    expect(reversi.winner(state)).not.toBeNull();
+  });
 });
