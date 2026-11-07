@@ -27,7 +27,7 @@ function search<State, Move>(
   alpha: number,
   beta: number,
   ply: number,
-  context: SearchContext<State>
+  context: SearchContext<State>,
 ): number {
   if (context.deadline !== null && Date.now() >= context.deadline) throw new SearchTimeout();
 
@@ -41,7 +41,15 @@ function search<State, Move>(
   const moves = searchMoves(engine, state);
   if (moves.length === 0) {
     if (engine.passTurn) {
-      return -search(engine, engine.passTurn(state), Math.max(0, depth - 1), -beta, -alpha, ply + 1, context);
+      return -search(
+        engine,
+        engine.passTurn(state),
+        Math.max(0, depth - 1),
+        -beta,
+        -alpha,
+        ply + 1,
+        context,
+      );
     }
     return 0;
   }
@@ -66,7 +74,7 @@ function bestMovesAtDepth<State, Move>(
   state: State,
   moves: Move[],
   depth: number,
-  context: SearchContext<State>
+  context: SearchContext<State>,
 ): Move[] {
   let bestValue = -Infinity;
   let bestMoves: Move[] = [];
@@ -97,7 +105,7 @@ function pickRandom<Move>(moves: Move[]): Move {
 export function getBestMove<State, Move>(
   engine: GameEngine<State, Move>,
   state: State,
-  options: SearchOptions<State>
+  options: SearchOptions<State>,
 ): Move | null {
   const moves = searchMoves(engine, state);
   if (moves.length === 0) return null;

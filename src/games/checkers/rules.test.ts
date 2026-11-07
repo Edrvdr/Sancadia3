@@ -61,7 +61,10 @@ describe('legal moves', () => {
     expect(move).toBeDefined();
     if (!move) throw new Error('Expected a jump move');
 
-    expect(move.captures).toEqual([[4, 1], [2, 3]]);
+    expect(move.captures).toEqual([
+      [4, 1],
+      [2, 3],
+    ]);
     expect(move.to).toEqual([1, 4]);
 
     const next = checkers.applyMove(state, move);

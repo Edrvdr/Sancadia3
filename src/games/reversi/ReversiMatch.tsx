@@ -20,7 +20,8 @@ function eqMove(a: ReversiMove, r: number, c: number): boolean {
 export default function ReversiMatch({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: reversi, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } =
+    match;
 
   const legal = legalMovesFor(state);
   const isLegal = (r: number, c: number) => legal.some((m) => eqMove(m, r, c));
@@ -39,12 +40,18 @@ export default function ReversiMatch({ config }: { config: MatchConfig }) {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold text-accent">{score1}</span>
-          <span className="font-semibold">{config.mode === 'two-player' ? 'Player 2' : 'Computer'}</span>
+          <span className="font-semibold">
+            {config.mode === 'two-player' ? 'Player 2' : 'Computer'}
+          </span>
           <span className={`h-5 w-5 rounded-full ${discTone[1]}`} />
         </div>
       </div>
 
-      <div role="status" aria-live="polite" className="flex min-h-11 items-center justify-center gap-3">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-11 items-center justify-center gap-3"
+      >
         <p className="font-semibold">{statusText(result, turn, config, humanSide)}</p>
         {computerTurn && <ThinkingDots />}
       </div>

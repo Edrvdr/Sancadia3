@@ -88,7 +88,9 @@ export function migrateStats(value: unknown): StatsData {
     const games: Record<string, GameStats> = {};
     for (const [gameId, game] of Object.entries(rawGames)) games[gameId] = parseGameStats(game);
     const appliedResultIds = Array.isArray(value.appliedResultIds)
-      ? value.appliedResultIds.filter((id): id is string => typeof id === 'string').slice(-MAX_RECORDED_RESULTS)
+      ? value.appliedResultIds
+          .filter((id): id is string => typeof id === 'string')
+          .slice(-MAX_RECORDED_RESULTS)
       : [];
     return {
       version: STATS_VERSION,
@@ -106,14 +108,16 @@ export function parseStats(value: unknown): StatsData {
 }
 
 function gameStatsFor(stats: StatsData, gameId: string): GameStats {
-  return stats.games[gameId] ?? {
-    computer: {
-      beginner: emptyDifficultyStats(),
-      professional: emptyDifficultyStats(),
-      expert: emptyDifficultyStats(),
-    },
-    twoPlayerPlayed: 0,
-  };
+  return (
+    stats.games[gameId] ?? {
+      computer: {
+        beginner: emptyDifficultyStats(),
+        professional: emptyDifficultyStats(),
+        expert: emptyDifficultyStats(),
+      },
+      twoPlayerPlayed: 0,
+    }
+  );
 }
 
 export function recordGameResult(stats: StatsData, result: GameResult): RecordedResult {

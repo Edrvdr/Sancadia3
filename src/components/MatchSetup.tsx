@@ -42,14 +42,24 @@ export default function MatchSetup({ onStart }: { onStart: (config: MatchConfig)
             <Users className="h-4 w-4" aria-hidden="true" />
             Players
           </p>
-          <SegmentedControl label="Players" options={opponentOptions} value={opponent} onChange={setOpponent} />
+          <SegmentedControl
+            label="Players"
+            options={opponentOptions}
+            value={opponent}
+            onChange={setOpponent}
+          />
         </div>
 
         {opponent === 'computer' && (
           <>
             <div>
               <p className="mb-2 text-sm font-semibold text-subtle">Who goes first</p>
-              <SegmentedControl label="Who goes first" options={orderOptions} value={order} onChange={setOrder} />
+              <SegmentedControl
+                label="Who goes first"
+                options={orderOptions}
+                value={order}
+                onChange={setOrder}
+              />
             </div>
             <div>
               <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-subtle">

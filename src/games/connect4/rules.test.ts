@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Player } from '@/engine/types';
-import { COLS, ROWS, connect4, findWin, type Cell, type Connect4State } from '@/games/connect4/rules';
+import {
+  COLS,
+  ROWS,
+  connect4,
+  findWin,
+  type Cell,
+  type Connect4State,
+} from '@/games/connect4/rules';
 
 function emptyBoard(): Cell[][] {
   return Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(null));
@@ -136,7 +143,9 @@ describe('moves', () => {
   });
 
   it('orders moves from the centre outwards', () => {
-    expect(connect4.orderMoves?.(connect4.initialState(), [0, 1, 2, 3, 4, 5, 6])).toEqual([3, 2, 4, 1, 5, 0, 6]);
+    expect(connect4.orderMoves?.(connect4.initialState(), [0, 1, 2, 3, 4, 5, 6])).toEqual([
+      3, 2, 4, 1, 5, 0, 6,
+    ]);
   });
 });
 

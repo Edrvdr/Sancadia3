@@ -94,28 +94,31 @@ export const themes: Theme[] = [
 ];
 
 export function getTheme(id: ThemeId): Theme {
-  return themes.find((theme) => theme.id === id) ?? themes[0] ?? {
-    id: 'classic',
-    name: 'Classic',
-    colorScheme: 'light',
-    tokens: {
-      background: '#f7f8f5',
-      surface: '#ffffff',
-      foreground: '#1c2421',
-      subtle: '#5b6661',
-      border: '#e1e6e0',
-      primary: '#047857',
-      'primary-hover': '#065f46',
-      'primary-foreground': '#ffffff',
-      'primary-soft': '#ecfdf5',
-      accent: '#a84b00',
-      danger: '#b91c1c',
-      'danger-foreground': '#ffffff',
-      'board-light': '#f3e9d2',
-      'board-dark': '#c9a66b',
-      'board-line': '#5b4636',
-    },
-  };
+  return (
+    themes.find((theme) => theme.id === id) ??
+    themes[0] ?? {
+      id: 'classic',
+      name: 'Classic',
+      colorScheme: 'light',
+      tokens: {
+        background: '#f7f8f5',
+        surface: '#ffffff',
+        foreground: '#1c2421',
+        subtle: '#5b6661',
+        border: '#e1e6e0',
+        primary: '#047857',
+        'primary-hover': '#065f46',
+        'primary-foreground': '#ffffff',
+        'primary-soft': '#ecfdf5',
+        accent: '#a84b00',
+        danger: '#b91c1c',
+        'danger-foreground': '#ffffff',
+        'board-light': '#f3e9d2',
+        'board-dark': '#c9a66b',
+        'board-line': '#5b4636',
+      },
+    }
+  );
 }
 
 function hexToRgbTriplet(hex: string) {

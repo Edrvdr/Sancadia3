@@ -14,7 +14,11 @@ interface EngineMatchOptions<State, Move> {
   chooseMove: (state: State, difficulty: Difficulty) => Move | null;
 }
 
-export function useEngineMatch<State, Move>({ engine, config, chooseMove }: EngineMatchOptions<State, Move>) {
+export function useEngineMatch<State, Move>({
+  engine,
+  config,
+  chooseMove,
+}: EngineMatchOptions<State, Move>) {
   const { place, win, lose, draw } = useFeedback();
   const { recordResult } = useStats();
   const matchInstance = useId();
@@ -42,14 +46,16 @@ export function useEngineMatch<State, Move>({ engine, config, chooseMove }: Engi
       const finished = engine.winner(next);
       if (finished === null) return;
       setScores((prev) =>
-        finished === 'draw' ? { ...prev, draws: prev.draws + 1 } : { ...prev, [finished]: prev[finished] + 1 }
+        finished === 'draw'
+          ? { ...prev, draws: prev.draws + 1 }
+          : { ...prev, [finished]: prev[finished] + 1 },
       );
       if (finished === 'draw') draw();
       else if (config.mode === 'two-player' || finished === humanSide) win();
       else lose();
       setDialogOpen(true);
     },
-    [config.mode, draw, engine, humanSide, lose, place, win]
+    [config.mode, draw, engine, humanSide, lose, place, win],
   );
 
   useEffect(() => {
@@ -66,7 +72,7 @@ export function useEngineMatch<State, Move>({ engine, config, chooseMove }: Engi
         mode: config.mode,
         ...(config.mode === 'computer' ? { difficulty: config.difficulty } : {}),
         outcome,
-      })
+      }),
     );
   }, [config, engine.id, humanSide, recordResult, result, matchInstance]);
 
@@ -83,9 +89,11 @@ export function useEngineMatch<State, Move>({ engine, config, chooseMove }: Engi
         void search
           .then((move) => {
             if (!active || move === null) return;
-            const legal = engine.legalMoves(state).some(
-              (candidate) => engine.movesEqual?.(candidate, move) ?? Object.is(candidate, move)
-            );
+            const legal = engine
+              .legalMoves(state)
+              .some(
+                (candidate) => engine.movesEqual?.(candidate, move) ?? Object.is(candidate, move),
+              );
             if (!legal) throw new Error(`AI returned an illegal move for ${engine.id}`);
             commit(engine.applyMove(state, move));
           })
@@ -94,7 +102,7 @@ export function useEngineMatch<State, Move>({ engine, config, chooseMove }: Engi
             console.error(`Unable to select an AI move for ${engine.id}:`, error);
           });
       },
-      400 + Math.random() * 400
+      400 + Math.random() * 400,
     );
     return () => {
       active = false;
@@ -111,7 +119,10 @@ export function useEngineMatch<State, Move>({ engine, config, chooseMove }: Engi
   const playMove = (move: Move) => {
     if (computerTurn || over) return;
     const legal = engine.legalMoves(state);
-    if (!legal.some((candidate) => engine.movesEqual?.(candidate, move) ?? Object.is(candidate, move))) return;
+    if (
+      !legal.some((candidate) => engine.movesEqual?.(candidate, move) ?? Object.is(candidate, move))
+    )
+      return;
     commit(engine.applyMove(state, move));
   };
 

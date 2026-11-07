@@ -74,7 +74,7 @@ describe('AI worker client', () => {
       'noughts-and-crosses',
       state,
       'beginner',
-      controller.signal
+      controller.signal,
     );
     const oldWorker = MockWorker.instances[0];
     expect(oldWorker).toBeDefined();
@@ -116,10 +116,14 @@ describe('AI worker client', () => {
         constructor() {
           throw new Error('Workers are blocked');
         }
-      }
+      },
     );
     const state = ticTacToe.initialState();
-    const move = await requestMove<TicTacToeState, number>('noughts-and-crosses', state, 'beginner');
+    const move = await requestMove<TicTacToeState, number>(
+      'noughts-and-crosses',
+      state,
+      'beginner',
+    );
     expect(ticTacToe.legalMoves(state)).toContain(move);
   });
 

@@ -1,6 +1,12 @@
 import { getDifficultySettings, pickAiMove, type Difficulty } from '@/engine/difficulty';
 import type { Player } from '@/engine/types';
-import { SIZE, reversi, type Cell, type ReversiMove, type ReversiState } from '@/games/reversi/rules';
+import {
+  SIZE,
+  reversi,
+  type Cell,
+  type ReversiMove,
+  type ReversiState,
+} from '@/games/reversi/rules';
 
 const DEPTH_CAPS = {
   maxDepthCap: { beginner: 1, professional: 3, expert: 5 },
@@ -8,14 +14,14 @@ const DEPTH_CAPS = {
 };
 
 const WEIGHTS: readonly (readonly number[])[] = [
-  [100, -20, 10,  5,  5, 10, -20, 100],
+  [100, -20, 10, 5, 5, 10, -20, 100],
   [-20, -50, -2, -2, -2, -2, -50, -20],
-  [ 10,  -2,  1,  1,  1,  1,  -2,  10],
-  [  5,  -2,  1,  1,  1,  1,  -2,   5],
-  [  5,  -2,  1,  1,  1,  1,  -2,   5],
-  [ 10,  -2,  1,  1,  1,  1,  -2,  10],
+  [10, -2, 1, 1, 1, 1, -2, 10],
+  [5, -2, 1, 1, 1, 1, -2, 5],
+  [5, -2, 1, 1, 1, 1, -2, 5],
+  [10, -2, 1, 1, 1, 1, -2, 10],
   [-20, -50, -2, -2, -2, -2, -50, -20],
-  [100, -20, 10,  5,  5, 10, -20, 100],
+  [100, -20, 10, 5, 5, 10, -20, 100],
 ];
 
 export function evaluate(state: ReversiState, player: Player): number {

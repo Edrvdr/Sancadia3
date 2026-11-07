@@ -62,12 +62,19 @@ describe('stats', () => {
   it('safely parses corrupt, malformed and older-version storage', () => {
     expect(parseStats(null)).toEqual(emptyStats());
     expect(parseStats({ version: 0, points: 999 })).toEqual(emptyStats());
-    expect(parseStats({ version: 1, totalPoints: -4, games: [], appliedResultIds: 'broken' })).toEqual(emptyStats());
-    expect(parseStats({ version: 1, totalPoints: 12, games: { game: { computer: { beginner: { wins: 2 } } } } }))
-      .toMatchObject({
+    expect(
+      parseStats({ version: 1, totalPoints: -4, games: [], appliedResultIds: 'broken' }),
+    ).toEqual(emptyStats());
+    expect(
+      parseStats({
         version: 1,
         totalPoints: 12,
-        games: { game: { computer: { beginner: { wins: 2, played: 0 } }, twoPlayerPlayed: 0 } },
-      });
+        games: { game: { computer: { beginner: { wins: 2 } } } },
+      }),
+    ).toMatchObject({
+      version: 1,
+      totalPoints: 12,
+      games: { game: { computer: { beginner: { wins: 2, played: 0 } }, twoPlayerPlayed: 0 } },
+    });
   });
 });

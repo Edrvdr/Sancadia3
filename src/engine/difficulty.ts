@@ -32,7 +32,7 @@ export function pickAiMove<State, Move>(
   engine: GameEngine<State, Move>,
   state: State,
   settings: DifficultySettings,
-  evaluate?: (state: State, player: Player) => number
+  evaluate?: (state: State, player: Player) => number,
 ): Move | null {
   const moves = engine.legalMoves(state);
   if (moves.length === 0) return null;

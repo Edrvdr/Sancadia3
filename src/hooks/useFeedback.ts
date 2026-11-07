@@ -24,7 +24,7 @@ export function useFeedback() {
       if (settings.soundEnabled) playSound(effect, settings.volume);
       vibrate(settings.vibrationEnabled, VIBRATION[effect]);
     },
-    [settings.soundEnabled, settings.vibrationEnabled, settings.volume]
+    [settings.soundEnabled, settings.vibrationEnabled, settings.volume],
   );
 
   const tap = useCallback(() => emit('tap'), [emit]);

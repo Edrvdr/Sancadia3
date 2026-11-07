@@ -17,7 +17,8 @@ const discTone = ['bg-primary', 'bg-accent'] as const;
 export default function Connect4Match({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: connect4, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } =
+    match;
   const [hoverCol, setHoverCol] = useState<number | null>(null);
 
   const inputLocked = computerTurn || over;
@@ -36,7 +37,11 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
     <div className="flex flex-1 flex-col gap-6">
       <Scoreboard entries={scoreEntries(config, humanSide, scores)} />
 
-      <div role="status" aria-live="polite" className="flex min-h-11 items-center justify-center gap-3">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-11 items-center justify-center gap-3"
+      >
         <p className="font-semibold">{statusText(result, turn, config, humanSide)}</p>
         {computerTurn && <ThinkingDots />}
       </div>
@@ -59,10 +64,15 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
               onPointerEnter={() => setHoverCol(col)}
               onClick={() => selectColumn(col)}
               className={`flex min-h-11 items-center justify-center rounded-xl transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 disabled:opacity-40 ${
-                active ? 'bg-primary text-primary-foreground shadow-md' : 'bg-primary-soft text-primary'
+                active
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'bg-primary-soft text-primary'
               }`}
             >
-              <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${active ? 'translate-y-0.5' : ''}`} aria-hidden="true" />
+              <ChevronDown
+                className={`h-5 w-5 transition-transform duration-200 ${active ? 'translate-y-0.5' : ''}`}
+                aria-hidden="true"
+              />
             </button>
           );
         })}
@@ -88,7 +98,12 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
           const preview = previewRow === boardRow && hoverCol === col && cell === null;
           return (
             <>
-              {columnLit && <span className="absolute inset-0 rounded-2xl bg-primary-soft/60" aria-hidden="true" />}
+              {columnLit && (
+                <span
+                  className="absolute inset-0 rounded-2xl bg-primary-soft/60"
+                  aria-hidden="true"
+                />
+              )}
               {cell !== null && (
                 <span
                   className={`relative h-[80%] w-[80%] animate-drop-piece rounded-full shadow-inner ${discTone[cell]} ${
@@ -97,13 +112,19 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
                   style={{ '--drop-from': `-${(displayRow + 1.5) * 125}%` } as CSSProperties}
                 >
                   <span className="sr-only">{cell === 0 ? '1' : '2'}</span>
-                  <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-sm font-black text-white/90">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 flex items-center justify-center text-sm font-black text-white/90"
+                  >
                     {cell === 0 ? '1' : '2'}
                   </span>
                 </span>
               )}
               {preview && (
-                <span className="relative h-[80%] w-[80%] rounded-full bg-primary/25" aria-hidden="true" />
+                <span
+                  className="relative h-[80%] w-[80%] rounded-full bg-primary/25"
+                  aria-hidden="true"
+                />
               )}
             </>
           );

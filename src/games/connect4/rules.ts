@@ -61,7 +61,9 @@ function resultOf(board: Board): Winner {
 
 function legalMovesFor(state: Connect4State): Connect4Move[] {
   if (resultOf(state.board) !== null) return [];
-  return Array.from({ length: COLS }, (_, col) => col).filter((col) => landingRow(state.board, col) !== null);
+  return Array.from({ length: COLS }, (_, col) => col).filter(
+    (col) => landingRow(state.board, col) !== null,
+  );
 }
 
 export const connect4: GameEngine<Connect4State, Connect4Move> = {

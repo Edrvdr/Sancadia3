@@ -79,13 +79,19 @@ function Grid2D({
             onClick={onCellTap ? () => onCellTap(row, col) : undefined}
             className={`relative flex aspect-square min-h-8 items-center justify-center rounded transition duration-150 ${cellColor(
               cell,
-              showShips
+              showShips,
             )} ${
-              !disabled && onCellTap && cell === 'empty' ? 'cursor-pointer hover:brightness-110' : ''
+              !disabled && onCellTap && cell === 'empty'
+                ? 'cursor-pointer hover:brightness-110'
+                : ''
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
           >
-            {cell === 'hit' && <Crosshair className="h-3/5 w-3/5 text-danger-foreground" aria-hidden="true" />}
-            {cell === 'miss' && <span className="h-1.5 w-1.5 rounded-full bg-foreground/30" aria-hidden="true" />}
+            {cell === 'hit' && (
+              <Crosshair className="h-3/5 w-3/5 text-danger-foreground" aria-hidden="true" />
+            )}
+            {cell === 'miss' && (
+              <span className="h-1.5 w-1.5 rounded-full bg-foreground/30" aria-hidden="true" />
+            )}
           </button>
         );
       })}
@@ -181,9 +187,11 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
     const size = SHIP_SIZES[placingIndex] ?? 0;
     const horizontal = orientation === 'horizontal';
     if (!canPlace(setupGrid, row, col, size, horizontal)) return;
-    setGrids((current) => replacePlayer(current, setupPlayer, placeShip(setupGrid, row, col, size, horizontal)));
+    setGrids((current) =>
+      replacePlayer(current, setupPlayer, placeShip(setupGrid, row, col, size, horizontal)),
+    );
     setFleets((current) =>
-      replacePlayer(current, setupPlayer, [...setupShips, { row, col, size, horizontal }])
+      replacePlayer(current, setupPlayer, [...setupShips, { row, col, size, horizontal }]),
     );
     setPlacingIndex((index) => index + 1);
   };
@@ -216,7 +224,9 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
     const humanFleet = fleets[humanSide] ?? [];
     const outcome = shoot(attackedGrid, humanFleet, shotRow, shotCol);
     setGrids((current) => replacePlayer(current, humanSide, outcome.grid));
-    setAiState(updateAiState(aiState, shot, outcome.result.hit ? 'hit' : 'miss', outcome.result.sunk));
+    setAiState(
+      updateAiState(aiState, shot, outcome.result.hit ? 'hit' : 'miss', outcome.result.sunk),
+    );
     vibrate(vibrationEnabled, outcome.result.sunk ? HAPTICS.gameEnd : HAPTICS.move);
 
     if (allShipsSunk(outcome.grid)) {
@@ -224,7 +234,17 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
       return;
     }
     setTurn(humanSide);
-  }, [aiState, computerSide, computerTurn, config, finishMatch, fleets, grids, humanSide, vibrationEnabled]);
+  }, [
+    aiState,
+    computerSide,
+    computerTurn,
+    config,
+    finishMatch,
+    fleets,
+    grids,
+    humanSide,
+    vibrationEnabled,
+  ]);
 
   useEffect(() => {
     if (phase !== 'play' || !computerTurn) return;
@@ -235,10 +255,12 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
   const summary = result === null ? null : describeResult(result, config, humanSide);
 
   if (phase === 'setup') {
-    const shipName = allPlaced ? null : SHIP_NAMES[placingIndex] ?? 'Ship';
-    const currentShipSize = allPlaced ? 0 : SHIP_SIZES[placingIndex] ?? 0;
+    const shipName = allPlaced ? null : (SHIP_NAMES[placingIndex] ?? 'Ship');
+    const currentShipSize = allPlaced ? 0 : (SHIP_SIZES[placingIndex] ?? 0);
     const currentShip = allPlaced ? null : `${shipName} (${currentShipSize})`;
-    const canStart = isComputer ? (fleets[humanSide] ?? []).length === SHIP_SIZES.length : allPlaced;
+    const canStart = isComputer
+      ? (fleets[humanSide] ?? []).length === SHIP_SIZES.length
+      : allPlaced;
 
     return (
       <div className="flex flex-1 flex-col gap-4">
@@ -246,7 +268,9 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
           {isComputer ? 'Place your fleet' : `Player ${setupPlayer + 1} — place your fleet`}
         </h2>
         {!isComputer && setupPlayer === 1 && (
-          <p className="text-sm text-subtle">Pass the device to Player 2 before placing their ships.</p>
+          <p className="text-sm text-subtle">
+            Pass the device to Player 2 before placing their ships.
+          </p>
         )}
         <div className="flex items-center justify-between">
           <p className="text-sm text-subtle">
@@ -269,7 +293,9 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
               type="button"
               onClick={() => setOrientation(direction)}
               className={`min-h-11 flex-1 rounded-xl text-sm font-semibold transition ${
-                orientation === direction ? 'bg-primary text-primary-foreground' : 'bg-surface ring-1 ring-border'
+                orientation === direction
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-surface ring-1 ring-border'
               }`}
             >
               {direction === 'horizontal' ? 'Horizontal' : 'Vertical'}
@@ -287,8 +313,9 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
               const col = index % SIZE;
               const cell = setupGrid[row]?.[col] ?? 'empty';
               const isHover = hoverCell?.[0] === row && hoverCell[1] === col;
-              const size = allPlaced ? 0 : SHIP_SIZES[placingIndex] ?? 0;
-              const canFit = !allPlaced && canPlace(setupGrid, row, col, size, orientation === 'horizontal');
+              const size = allPlaced ? 0 : (SHIP_SIZES[placingIndex] ?? 0);
+              const canFit =
+                !allPlaced && canPlace(setupGrid, row, col, size, orientation === 'horizontal');
               const preview = new Set<string>();
               if (isHover && canFit) {
                 for (let offset = 0; offset < size; offset++) {
@@ -311,7 +338,9 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
                     isHover && !canFit && !allPlaced ? 'bg-danger/20' : ''
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
                 >
-                  {cell === 'ship' && <Anchor className="h-1/2 w-1/2 text-primary-foreground" aria-hidden="true" />}
+                  {cell === 'ship' && (
+                    <Anchor className="h-1/2 w-1/2 text-primary-foreground" aria-hidden="true" />
+                  )}
                 </button>
               );
             })}
@@ -350,7 +379,11 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
         </span>
       </div>
 
-      <div role="status" aria-live="polite" className="flex min-h-11 items-center justify-center gap-3">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-11 items-center justify-center gap-3"
+      >
         <p className="font-semibold">{statusText(result, turn, config, humanSide)}</p>
         {computerTurn && <ThinkingDots />}
       </div>
@@ -370,7 +403,12 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
 
       <div className="flex flex-col gap-2">
         <p className="text-center text-sm font-semibold text-subtle">Your fleet</p>
-        <Grid2D grid={grids[activePlayer]} showShips disabled label={`Player ${activePlayer + 1} fleet`} />
+        <Grid2D
+          grid={grids[activePlayer]}
+          showShips
+          disabled
+          label={`Player ${activePlayer + 1} fleet`}
+        />
       </div>
 
       <Button variant="secondary" onClick={restart}>

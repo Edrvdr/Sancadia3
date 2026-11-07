@@ -15,7 +15,7 @@ function renderWithProviders(children: ReactNode) {
       <SettingsProvider>
         <StatsProvider>{children}</StatsProvider>
       </SettingsProvider>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -45,7 +45,9 @@ describe('game screens', () => {
 
     const board = screen.getByRole('group', { name: 'Connect 4 board' });
     await user.click(within(board).getByRole('button', { name: 'Row 6, column 1, empty' }));
-    expect(within(board).getByRole('button', { name: 'Row 6, column 1, player one disc' })).toBeTruthy();
+    expect(
+      within(board).getByRole('button', { name: 'Row 6, column 1, player one disc' }),
+    ).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: 'Restart' }));
     expect(within(board).getByRole('button', { name: 'Row 6, column 1, empty' })).toBeTruthy();
@@ -59,7 +61,9 @@ describe('game screens', () => {
     const board = screen.getByRole('group', { name: 'Gomoku board' });
     await user.click(within(board).getByRole('button', { name: 'Empty, row 8, column 8' }));
     await user.click(within(board).getByRole('button', { name: 'Empty, row 8, column 8' }));
-    expect(within(board).getByRole('button', { name: 'Black stone, row 8, column 8' })).toBeTruthy();
+    expect(
+      within(board).getByRole('button', { name: 'Black stone, row 8, column 8' }),
+    ).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: 'Restart' }));
     expect(within(board).getByRole('button', { name: 'Empty, row 8, column 8' })).toBeTruthy();

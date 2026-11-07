@@ -19,8 +19,10 @@ export default function StatsScreen() {
   const { stats } = useStats();
   const totalPlayed = Object.values(stats.games).reduce(
     (total, game) =>
-      total + game.twoPlayerPlayed + difficulties.reduce((sum, level) => sum + game.computer[level].played, 0),
-    0
+      total +
+      game.twoPlayerPlayed +
+      difficulties.reduce((sum, level) => sum + game.computer[level].played, 0),
+    0,
   );
 
   return (
@@ -35,7 +37,9 @@ export default function StatsScreen() {
         {totalPlayed === 0 ? (
           <Card className="text-center">
             <h2 className="text-lg font-bold">Your arcade stats start here</h2>
-            <p className="mt-2 text-subtle">Finish a game to see your results, streaks and points.</p>
+            <p className="mt-2 text-subtle">
+              Finish a game to see your results, streaks and points.
+            </p>
           </Card>
         ) : (
           <>
@@ -43,15 +47,26 @@ export default function StatsScreen() {
             {games.map((game) => {
               const record = stats.games[game.id];
               const computer = record?.computer;
-              const played = difficulties.reduce((total, level) => total + (computer?.[level].played ?? 0), 0);
-              const wins = difficulties.reduce((total, level) => total + (computer?.[level].wins ?? 0), 0);
-              const bestStreak = Math.max(0, ...difficulties.map((level) => computer?.[level].bestWinStreak ?? 0));
+              const played = difficulties.reduce(
+                (total, level) => total + (computer?.[level].played ?? 0),
+                0,
+              );
+              const wins = difficulties.reduce(
+                (total, level) => total + (computer?.[level].wins ?? 0),
+                0,
+              );
+              const bestStreak = Math.max(
+                0,
+                ...difficulties.map((level) => computer?.[level].bestWinStreak ?? 0),
+              );
               const twoPlayerPlayed = record?.twoPlayerPlayed ?? 0;
               return (
                 <Card key={game.id} className="grid gap-3">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="font-bold">{game.name}</h3>
-                    <span className="text-sm text-subtle">{played} vs computer · {twoPlayerPlayed} two-player</span>
+                    <span className="text-sm text-subtle">
+                      {played} vs computer · {twoPlayerPlayed} two-player
+                    </span>
                   </div>
                   <p className="text-sm text-subtle">
                     Computer win rate: {percentage(wins, played)} · Best streak: {bestStreak}
@@ -62,7 +77,9 @@ export default function StatsScreen() {
                       return (
                         <div key={level} className="rounded-xl bg-background p-2 text-center">
                           <p className="text-xs font-semibold">{labels[level]}</p>
-                          <p className="mt-1 text-sm">{row?.wins ?? 0}W · {row?.losses ?? 0}L · {row?.draws ?? 0}D</p>
+                          <p className="mt-1 text-sm">
+                            {row?.wins ?? 0}W · {row?.losses ?? 0}L · {row?.draws ?? 0}D
+                          </p>
                         </div>
                       );
                     })}

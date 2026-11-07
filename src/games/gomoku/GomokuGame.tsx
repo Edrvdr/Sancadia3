@@ -15,7 +15,8 @@ import { useEngineMatch } from '@/games/useEngineMatch';
 export default function GomokuGame({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: gomoku, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } =
+    match;
   const [preview, setPreview] = useState<GomokuMove | null>(null);
   const [lastMove, setLastMove] = useState<GomokuMove | null>(null);
   const previousBoard = useRef(state.board);
@@ -24,7 +25,10 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
     let move: GomokuMove | null = null;
     for (let row = 0; row < SIZE && move === null; row++) {
       for (let col = 0; col < SIZE; col++) {
-        if ((previousBoard.current[row]?.[col] ?? null) === null && (state.board[row]?.[col] ?? null) !== null) {
+        if (
+          (previousBoard.current[row]?.[col] ?? null) === null &&
+          (state.board[row]?.[col] ?? null) !== null
+        ) {
           move = { row, col };
           break;
         }
@@ -60,13 +64,19 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
     <div className="flex flex-1 flex-col gap-6">
       <Scoreboard entries={scoreEntries(config, humanSide, scores)} />
 
-      <div role="status" aria-live="polite" className="flex min-h-11 items-center justify-center gap-3">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-11 items-center justify-center gap-3"
+      >
         <p className="font-semibold">{statusText(result, turn, config, humanSide)}</p>
         {computerTurn && <ThinkingDots />}
       </div>
 
       <p className="text-center text-sm text-subtle">
-        {preview ? 'Tap the highlighted cell again to place your stone.' : 'Tap an empty cell twice to place a stone.'}
+        {preview
+          ? 'Tap the highlighted cell again to place your stone.'
+          : 'Tap an empty cell twice to place a stone.'}
       </p>
 
       <GameBoard
@@ -96,13 +106,19 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
                   } ${isWinning ? 'ring-2 ring-danger' : ''}`}
                   aria-label={cell === 0 ? 'Black stone' : 'White stone'}
                 >
-                  <span aria-hidden="true" className={`flex h-full w-full items-center justify-center text-[0.55rem] font-black ${cell === 0 ? 'text-primary-foreground' : 'text-foreground'}`}>
+                  <span
+                    aria-hidden="true"
+                    className={`flex h-full w-full items-center justify-center text-[0.55rem] font-black ${cell === 0 ? 'text-primary-foreground' : 'text-foreground'}`}
+                  >
                     {cell === 0 ? 'X' : 'O'}
                   </span>
                 </span>
               )}
               {isPreview && cell === null && (
-                <span className="relative h-[70%] w-[70%] rounded-full bg-primary/40 ring-2 ring-primary" aria-hidden="true" />
+                <span
+                  className="relative h-[70%] w-[70%] rounded-full bg-primary/40 ring-2 ring-primary"
+                  aria-hidden="true"
+                />
               )}
             </>
           );

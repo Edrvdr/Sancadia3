@@ -74,9 +74,7 @@ export default function AuthScreen({ initialMode = 'login' }: { initialMode?: Mo
         </Button>
 
         <div className="flex items-center justify-center gap-1 pt-1 text-sm text-subtle">
-          <span>
-            {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
-          </span>
+          <span>{mode === 'login' ? "Don't have an account?" : 'Already have an account?'}</span>
           <button
             type="button"
             onClick={() => {

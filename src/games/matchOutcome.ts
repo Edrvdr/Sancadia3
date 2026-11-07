@@ -16,9 +16,17 @@ export interface Summary {
   message: string;
 }
 
-export function describeResult(result: Player | 'draw', config: MatchConfig, humanSide: Player): Summary {
+export function describeResult(
+  result: Player | 'draw',
+  config: MatchConfig,
+  humanSide: Player,
+): Summary {
   if (result === 'draw') {
-    return { outcome: 'draw', headline: "It's a draw", message: 'Neither side found a gap this time.' };
+    return {
+      outcome: 'draw',
+      headline: "It's a draw",
+      message: 'Neither side found a gap this time.',
+    };
   }
   if (config.mode === 'two-player') {
     return { outcome: 'win', headline: `Player ${result + 1} wins!`, message: 'Well played.' };
@@ -28,7 +36,12 @@ export function describeResult(result: Player | 'draw', config: MatchConfig, hum
     : { outcome: 'lose', headline: 'Computer wins', message: 'So close. Try again for a rematch.' };
 }
 
-export function statusText(result: Winner, turn: Player, config: MatchConfig, humanSide: Player): string {
+export function statusText(
+  result: Winner,
+  turn: Player,
+  config: MatchConfig,
+  humanSide: Player,
+): string {
   if (result !== null) return describeResult(result, config, humanSide).headline;
   if (config.mode === 'two-player') return `Player ${turn + 1}'s turn`;
   return turn === humanSide ? 'Your turn' : 'Computer is thinking';

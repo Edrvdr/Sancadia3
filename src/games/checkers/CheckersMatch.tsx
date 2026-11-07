@@ -6,11 +6,7 @@ import GameOverDialog from '@/components/GameOverDialog';
 import Scoreboard from '@/components/Scoreboard';
 import ThinkingDots from '@/components/ThinkingDots';
 import { chooseMove } from '@/games/checkers/ai';
-import {
-  SIZE,
-  checkers,
-  legalMovesFor,
-} from '@/games/checkers/rules';
+import { SIZE, checkers, legalMovesFor } from '@/games/checkers/rules';
 import type { MatchConfig } from '@/games/matchConfig';
 import { describeResult, scoreEntries, statusText } from '@/games/matchOutcome';
 import { useEngineMatch } from '@/games/useEngineMatch';
@@ -24,12 +20,14 @@ function samePos(a: readonly [number, number], r: number, c: number): boolean {
 export default function CheckersMatch({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: checkers, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } =
+    match;
   const [selected, setSelected] = useState<[number, number] | null>(null);
 
   const allLegal = legalMovesFor(state);
-  const selectableOrigins = Array.from(new Set(allLegal.map((m) => `${m.from[0]},${m.from[1]}`)))
-    .map((key) => key.split(',').map(Number) as [number, number]);
+  const selectableOrigins = Array.from(
+    new Set(allLegal.map((m) => `${m.from[0]},${m.from[1]}`)),
+  ).map((key) => key.split(',').map(Number) as [number, number]);
 
   const movesFromSelected = selected
     ? allLegal.filter((m) => samePos(m.from, selected[0], selected[1]))
@@ -49,7 +47,11 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
       }
     }
     const piece = state.board[row]?.[col] ?? null;
-    if (piece !== null && piece.player === turn && selectableOrigins.some(([r, c]) => r === row && c === col)) {
+    if (
+      piece !== null &&
+      piece.player === turn &&
+      selectableOrigins.some(([r, c]) => r === row && c === col)
+    ) {
       setSelected([row, col]);
     } else {
       setSelected(null);
@@ -62,7 +64,11 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
     <div className="flex flex-1 flex-col gap-6">
       <Scoreboard entries={scoreEntries(config, humanSide, scores)} />
 
-      <div role="status" aria-live="polite" className="flex min-h-11 items-center justify-center gap-3">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-11 items-center justify-center gap-3"
+      >
         <p className="font-semibold">{statusText(result, turn, config, humanSide)}</p>
         {computerTurn && <ThinkingDots />}
       </div>
@@ -78,10 +84,12 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
           const col = index % SIZE;
           const dark = (row + col) % 2 === 1;
           const piece = state.board[row]?.[col] ?? null;
-          const canSelect = !computerTurn && !over && selectableOrigins.some(([r, c]) => r === row && c === col);
+          const canSelect =
+            !computerTurn && !over && selectableOrigins.some(([r, c]) => r === row && c === col);
           const isSelected = selected !== null && samePos(selected, row, col);
           const isDest = destinations.has(`${row},${col}`);
-          const isCapture = isDest && movesFromSelected.find((m) => samePos(m.to, row, col))?.captures.length;
+          const isCapture =
+            isDest && movesFromSelected.find((m) => samePos(m.to, row, col))?.captures.length;
           return (
             <button
               key={index}
@@ -108,7 +116,9 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
               {isDest && (
                 <span
                   className={`absolute inset-0 flex items-center justify-center rounded-lg ${
-                    isCapture ? 'bg-danger/30 ring-2 ring-danger/60' : 'bg-primary/20 ring-2 ring-primary/50'
+                    isCapture
+                      ? 'bg-danger/30 ring-2 ring-danger/60'
+                      : 'bg-primary/20 ring-2 ring-primary/50'
                   }`}
                   aria-hidden="true"
                 />
@@ -118,7 +128,13 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
         })}
       </div>
 
-      <Button variant="secondary" onClick={() => { match.restart(); setSelected(null); }}>
+      <Button
+        variant="secondary"
+        onClick={() => {
+          match.restart();
+          setSelected(null);
+        }}
+      >
         <RotateCcw className="h-4 w-4" aria-hidden="true" />
         Restart
       </Button>
@@ -130,7 +146,10 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
           headline={summary.headline}
           message={summary.message}
           pointsEarned={config.mode === 'computer' ? pointsEarned : undefined}
-          onPlayAgain={() => { match.restart(); setSelected(null); }}
+          onPlayAgain={() => {
+            match.restart();
+            setSelected(null);
+          }}
           onBackToMenu={() => navigate('/games')}
           onClose={match.closeDialog}
         />

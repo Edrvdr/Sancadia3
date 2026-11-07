@@ -1,6 +1,12 @@
 import { getDifficultySettings, pickAiMove, type Difficulty } from '@/engine/difficulty';
 import type { Player } from '@/engine/types';
-import { SIZE, checkers, type CheckersMove, type CheckersState, type Occupant } from '@/games/checkers/rules';
+import {
+  SIZE,
+  checkers,
+  type CheckersMove,
+  type CheckersState,
+  type Occupant,
+} from '@/games/checkers/rules';
 
 const DEPTH_CAPS = {
   maxDepthCap: { beginner: 1, professional: 4, expert: 7 },

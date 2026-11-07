@@ -41,9 +41,10 @@ export function parseSettings(value: unknown): Settings {
       typeof value.vibrationEnabled === 'boolean'
         ? value.vibrationEnabled
         : DEFAULT_SETTINGS.vibrationEnabled,
-    volume: typeof value.volume === 'number' && Number.isFinite(value.volume)
-      ? Math.min(1, Math.max(0, value.volume))
-      : DEFAULT_SETTINGS.volume,
+    volume:
+      typeof value.volume === 'number' && Number.isFinite(value.volume)
+        ? Math.min(1, Math.max(0, value.volume))
+        : DEFAULT_SETTINGS.volume,
     difficulty: isDifficulty(value.difficulty) ? value.difficulty : DEFAULT_SETTINGS.difficulty,
   };
 }

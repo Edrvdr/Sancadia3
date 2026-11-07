@@ -20,9 +20,7 @@ export default function PwaNotifications() {
       role="status"
       className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-3 rounded-2xl bg-surface p-3 shadow-xl ring-1 ring-border"
     >
-      <p className="text-sm font-semibold">
-        {needRefresh ? 'Update available' : 'Offline ready'}
-      </p>
+      <p className="text-sm font-semibold">{needRefresh ? 'Update available' : 'Offline ready'}</p>
       {needRefresh ? (
         <Button onClick={() => void updateServiceWorker(true)}>Reload</Button>
       ) : (

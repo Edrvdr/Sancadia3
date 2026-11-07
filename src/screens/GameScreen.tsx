@@ -20,7 +20,9 @@ export default function GameScreen() {
     return (
       <>
         <ScreenHeader title="Game not found" backTo="/games" />
-        <p className="text-subtle">We couldn't find that game. Head back to the menu to pick another.</p>
+        <p className="text-subtle">
+          We couldn't find that game. Head back to the menu to pick another.
+        </p>
       </>
     );
   }

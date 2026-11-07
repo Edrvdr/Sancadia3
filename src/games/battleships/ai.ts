@@ -9,7 +9,12 @@ export interface AiState {
 }
 
 export function createAiState(ships: ShipPlacement[]): AiState {
-  return { targetGrid: Array.from({ length: SIZE }, () => Array<CellState>(SIZE).fill('empty')), ships, queue: [], hits: [] };
+  return {
+    targetGrid: Array.from({ length: SIZE }, () => Array<CellState>(SIZE).fill('empty')),
+    ships,
+    queue: [],
+    hits: [],
+  };
 }
 
 function inBounds(r: number, c: number): boolean {
@@ -59,7 +64,9 @@ export function chooseAiShot(state: AiState, difficulty: Difficulty): readonly [
           [r, first[1] - 1],
           [r, last[1] + 1],
         ];
-        const openCandidates = candidates.filter(([nr, nc]) => inBounds(nr, nc) && targetGrid[nr]?.[nc] === 'empty');
+        const openCandidates = candidates.filter(
+          ([nr, nc]) => inBounds(nr, nc) && targetGrid[nr]?.[nc] === 'empty',
+        );
         if (openCandidates.length > 0) return openCandidates[0] ?? [0, 0];
       } else if (first && last) {
         const c = first[1];
@@ -67,7 +74,9 @@ export function chooseAiShot(state: AiState, difficulty: Difficulty): readonly [
           [first[0] - 1, c],
           [last[0] + 1, c],
         ];
-        const openCandidates = candidates.filter(([nr, nc]) => inBounds(nr, nc) && targetGrid[nr]?.[nc] === 'empty');
+        const openCandidates = candidates.filter(
+          ([nr, nc]) => inBounds(nr, nc) && targetGrid[nr]?.[nc] === 'empty',
+        );
         if (openCandidates.length > 0) return openCandidates[0] ?? [0, 0];
       }
     }
@@ -88,7 +97,12 @@ export function chooseAiShot(state: AiState, difficulty: Difficulty): readonly [
   return pool[poolIndex] ?? [0, 0];
 }
 
-export function updateAiState(state: AiState, shot: readonly [number, number], result: 'hit' | 'miss', sunk: boolean): AiState {
+export function updateAiState(
+  state: AiState,
+  shot: readonly [number, number],
+  result: 'hit' | 'miss',
+  sunk: boolean,
+): AiState {
   const [shotRow, shotCol] = shot;
   if (shotRow === undefined || shotCol === undefined) {
     return state;
@@ -120,12 +134,16 @@ export function updateAiState(state: AiState, shot: readonly [number, number], r
         const last = sorted[sorted.length - 1];
         if (first && last && first[0] === last[0]) {
           const r = first[0];
-          if (inBounds(r, first[1] - 1) && targetGrid[r]?.[first[1] - 1] === 'empty') queue.push([r, first[1] - 1]);
-          if (inBounds(r, last[1] + 1) && targetGrid[r]?.[last[1] + 1] === 'empty') queue.push([r, last[1] + 1]);
+          if (inBounds(r, first[1] - 1) && targetGrid[r]?.[first[1] - 1] === 'empty')
+            queue.push([r, first[1] - 1]);
+          if (inBounds(r, last[1] + 1) && targetGrid[r]?.[last[1] + 1] === 'empty')
+            queue.push([r, last[1] + 1]);
         } else if (first && last) {
           const c = first[1];
-          if (inBounds(first[0] - 1, c) && targetGrid[first[0] - 1]?.[c] === 'empty') queue.push([first[0] - 1, c]);
-          if (inBounds(last[0] + 1, c) && targetGrid[last[0] + 1]?.[c] === 'empty') queue.push([last[0] + 1, c]);
+          if (inBounds(first[0] - 1, c) && targetGrid[first[0] - 1]?.[c] === 'empty')
+            queue.push([first[0] - 1, c]);
+          if (inBounds(last[0] + 1, c) && targetGrid[last[0] + 1]?.[c] === 'empty')
+            queue.push([last[0] + 1, c]);
         }
       }
     }

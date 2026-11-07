@@ -22,7 +22,7 @@ export default function SettingsProvider({ children }: { children: ReactNode }) 
       saveSettings(next);
       setSettings(next);
     },
-    [settings]
+    [settings],
   );
 
   const resetSettings = useCallback(() => {
@@ -32,7 +32,7 @@ export default function SettingsProvider({ children }: { children: ReactNode }) 
 
   const value = useMemo<SettingsContextValue>(
     () => ({ settings, updateSettings, resetSettings }),
-    [settings, updateSettings, resetSettings]
+    [settings, updateSettings, resetSettings],
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

@@ -17,7 +17,9 @@ export default function ShopScreen() {
               <p className="text-sm text-subtle">Avatar cosmetics, power-ups, and daily deals.</p>
             </div>
           </div>
-          <p className="text-sm text-subtle">Coming soon. Spend your earned currency and grab new looks.</p>
+          <p className="text-sm text-subtle">
+            Coming soon. Spend your earned currency and grab new looks.
+          </p>
         </Card>
         <Card className="grid gap-4">
           <div className="flex items-center gap-3">
@@ -29,7 +31,9 @@ export default function ShopScreen() {
               <p className="text-sm text-subtle">Seasonal rewards and unlocks.</p>
             </div>
           </div>
-          <p className="text-sm text-subtle">Coming soon. Progress through tiers and earn exclusive items.</p>
+          <p className="text-sm text-subtle">
+            Coming soon. Progress through tiers and earn exclusive items.
+          </p>
         </Card>
       </div>
     </>

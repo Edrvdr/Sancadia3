@@ -100,9 +100,10 @@ describe('passing and terminal results', () => {
     let state = reversi.initialState();
     for (let turn = 0; turn < SIZE * SIZE * 2 && !reversi.isTerminal(state); turn++) {
       const moves = legalMovesFor(state);
-      state = moves.length === 0
-        ? reversi.passTurn?.(state) ?? state
-        : reversi.applyMove(state, moves[0] ?? [0, 0]);
+      state =
+        moves.length === 0
+          ? (reversi.passTurn?.(state) ?? state)
+          : reversi.applyMove(state, moves[0] ?? [0, 0]);
     }
     expect(reversi.isTerminal(state)).toBe(true);
     expect(reversi.winner(state)).not.toBeNull();

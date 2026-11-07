@@ -1,6 +1,13 @@
 import { getDifficultySettings, pickAiMove, type Difficulty } from '@/engine/difficulty';
 import type { Player } from '@/engine/types';
-import { COLS, ROWS, connect4, type Cell, type Connect4Move, type Connect4State } from '@/games/connect4/rules';
+import {
+  COLS,
+  ROWS,
+  connect4,
+  type Cell,
+  type Connect4Move,
+  type Connect4State,
+} from '@/games/connect4/rules';
 
 const DEPTH_CAPS = {
   maxDepthCap: { beginner: 2, professional: 4, expert: 6 },

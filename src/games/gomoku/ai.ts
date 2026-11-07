@@ -1,6 +1,13 @@
 import { getDifficultySettings, pickAiMove, type Difficulty } from '@/engine/difficulty';
 import type { Player } from '@/engine/types';
-import { SIZE, WIN_LENGTH, gomoku, type Cell, type GomokuMove, type GomokuState } from '@/games/gomoku/rules';
+import {
+  SIZE,
+  WIN_LENGTH,
+  gomoku,
+  type Cell,
+  type GomokuMove,
+  type GomokuState,
+} from '@/games/gomoku/rules';
 
 const DEPTH_CAPS = {
   maxDepthCap: { beginner: 1, professional: 2, expert: 3 },
@@ -32,7 +39,7 @@ function countWindow(
   col: number,
   dRow: number,
   dCol: number,
-  player: Player
+  player: Player,
 ): number {
   let count = 0;
   let opponentFound = false;
@@ -48,10 +55,22 @@ function countWindow(
   const beforeCol = col - dCol;
   const afterRow = row + dRow * WIN_LENGTH;
   const afterCol = col + dCol * WIN_LENGTH;
-  if (beforeRow >= 0 && beforeRow < SIZE && beforeCol >= 0 && beforeCol < SIZE && (board[beforeRow]?.[beforeCol] ?? null) === null) {
+  if (
+    beforeRow >= 0 &&
+    beforeRow < SIZE &&
+    beforeCol >= 0 &&
+    beforeCol < SIZE &&
+    (board[beforeRow]?.[beforeCol] ?? null) === null
+  ) {
     openEnds++;
   }
-  if (afterRow >= 0 && afterRow < SIZE && afterCol >= 0 && afterCol < SIZE && (board[afterRow]?.[afterCol] ?? null) === null) {
+  if (
+    afterRow >= 0 &&
+    afterRow < SIZE &&
+    afterCol >= 0 &&
+    afterCol < SIZE &&
+    (board[afterRow]?.[afterCol] ?? null) === null
+  ) {
     openEnds++;
   }
   return windowScore(count, openEnds);
@@ -83,7 +102,11 @@ export function evaluate(state: GomokuState, player: Player): number {
       else if (cell === opponent) centerScore -= centerBonus;
     }
   }
-  return countWindows(state.board, player) - countWindows(state.board, opponent) * DEFENCE_WEIGHT + centerScore;
+  return (
+    countWindows(state.board, player) -
+    countWindows(state.board, opponent) * DEFENCE_WEIGHT +
+    centerScore
+  );
 }
 
 export function chooseMove(state: GomokuState, difficulty: Difficulty): GomokuMove | null {

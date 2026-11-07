@@ -1,4 +1,9 @@
-import { getDifficultySettings, pickAiMove, type Difficulty, type DifficultyCaps } from '@/engine/difficulty';
+import {
+  getDifficultySettings,
+  pickAiMove,
+  type Difficulty,
+  type DifficultyCaps,
+} from '@/engine/difficulty';
 import type { GameEngine, Player } from '@/engine/types';
 import { evaluate as evaluateConnect4 } from '@/games/connect4/ai';
 import { connect4, type Connect4State } from '@/games/connect4/rules';
@@ -10,12 +15,7 @@ import { evaluate as evaluateReversi } from '@/games/reversi/ai';
 import { reversi, type ReversiState } from '@/games/reversi/rules';
 import { ticTacToe, type TicTacToeState } from '@/games/tictactoe/rules';
 
-export type WorkerGameId =
-  | 'noughts-and-crosses'
-  | 'connect-4'
-  | 'gomoku'
-  | 'reversi'
-  | 'checkers';
+export type WorkerGameId = 'noughts-and-crosses' | 'connect-4' | 'gomoku' | 'reversi' | 'checkers';
 
 export interface WorkerAiEntry {
   depthCaps: DifficultyCaps;
@@ -74,7 +74,12 @@ function isReversiState(value: unknown): value is ReversiState {
 }
 
 function isCheckersState(value: unknown): value is CheckersState {
-  if (!isRecord(value) || !isPlayer(value.turn) || !Array.isArray(value.board) || value.board.length !== 8) {
+  if (
+    !isRecord(value) ||
+    !isPlayer(value.turn) ||
+    !Array.isArray(value.board) ||
+    value.board.length !== 8
+  ) {
     return false;
   }
   const validBoard = value.board.every(
@@ -86,8 +91,8 @@ function isCheckersState(value: unknown): value is CheckersState {
           piece === null ||
           (isRecord(piece) &&
             isPlayer(piece.player) &&
-            (piece.type === 'man' || piece.type === 'king'))
-      )
+            (piece.type === 'man' || piece.type === 'king')),
+      ),
   );
   const continuation = value.mustContinueFrom;
   return (
@@ -103,7 +108,7 @@ function createEntry<State, Move>(
   engine: GameEngine<State, Move>,
   depthCaps: DifficultyCaps,
   validate: (state: unknown) => state is State,
-  evaluate?: (state: State, player: Player) => number
+  evaluate?: (state: State, player: Player) => number,
 ): WorkerAiEntry {
   const evaluateUnknown = evaluate
     ? (state: unknown, player: Player) => (validate(state) ? evaluate(state, player) : 0)
@@ -119,11 +124,13 @@ function createEntry<State, Move>(
     },
     isLegalMove(state, candidate) {
       if (!validate(state)) return false;
-      return engine.legalMoves(state).some(
-        (move) =>
-          engine.movesEqual?.(move, candidate as Move) ??
-          JSON.stringify(move) === JSON.stringify(candidate)
-      );
+      return engine
+        .legalMoves(state)
+        .some(
+          (move) =>
+            engine.movesEqual?.(move, candidate as Move) ??
+            JSON.stringify(move) === JSON.stringify(candidate),
+        );
     },
   };
 }

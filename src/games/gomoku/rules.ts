@@ -110,8 +110,10 @@ function scoreLine(board: Board, row: number, col: number, player: Player): numb
 
 function moveOrderingScore(state: GomokuState, move: GomokuMove): number {
   const opponent: Player = state.turn === 0 ? 1 : 0;
-  return scoreLine(state.board, move.row, move.col, state.turn)
-    + scoreLine(state.board, move.row, move.col, opponent) * 1.1;
+  return (
+    scoreLine(state.board, move.row, move.col, state.turn) +
+    scoreLine(state.board, move.row, move.col, opponent) * 1.1
+  );
 }
 
 function isFull(board: Board): boolean {
@@ -139,9 +141,14 @@ export const gomoku: GameEngine<GomokuState, GomokuMove> = {
   legalMoves: legalMovesFor,
   candidateMoves: candidateMovesFor,
   movesEqual: (a, b) => a.row === b.row && a.col === b.col,
-  orderMoves: (state, moves) => [...moves].sort((a, b) => moveOrderingScore(state, b) - moveOrderingScore(state, a)),
+  orderMoves: (state, moves) =>
+    [...moves].sort((a, b) => moveOrderingScore(state, b) - moveOrderingScore(state, a)),
   applyMove: (state, move) => {
-    if (!legalMovesFor(state).some((candidate) => candidate.row === move.row && candidate.col === move.col)) {
+    if (
+      !legalMovesFor(state).some(
+        (candidate) => candidate.row === move.row && candidate.col === move.col,
+      )
+    ) {
       throw new Error(`Illegal move: ${move.row},${move.col}`);
     }
 

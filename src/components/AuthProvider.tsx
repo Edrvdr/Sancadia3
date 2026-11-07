@@ -63,7 +63,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
     }),
-    [session, loading, signUp, signIn, signOut]
+    [session, loading, signUp, signIn, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

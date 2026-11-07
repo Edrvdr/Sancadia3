@@ -14,9 +14,14 @@ export interface ReversiState {
 export type ReversiMove = readonly [number, number];
 
 const DIRS: readonly (readonly [number, number])[] = [
-  [-1, -1], [-1, 0], [-1, 1],
-  [0, -1],           [0, 1],
-  [1, -1],  [1, 0],  [1, 1],
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 0],
+  [1, 1],
 ];
 
 function inBounds(r: number, c: number): boolean {
@@ -126,19 +131,23 @@ export const reversi: GameEngine<ReversiState, ReversiMove> = {
     return applyMoveInternal(state, move);
   },
   passTurn: (state) => {
-    if (legalMovesFor(state).length > 0 || legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length === 0) {
+    if (
+      legalMovesFor(state).length > 0 ||
+      legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length === 0
+    ) {
       throw new Error('Cannot pass when a legal move is available or the game is over');
     }
     return { board: state.board, turn: otherPlayer(state.turn), passed: true };
   },
   isTerminal: (state) =>
-    legalMovesFor(state).length === 0
-    && legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length === 0,
+    legalMovesFor(state).length === 0 &&
+    legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length === 0,
   winner: (state): Winner => {
     if (
-      legalMovesFor(state).length > 0
-      || legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length > 0
-    ) return null;
+      legalMovesFor(state).length > 0 ||
+      legalMovesFor({ ...state, turn: otherPlayer(state.turn) }).length > 0
+    )
+      return null;
     const [p0, p1] = countDiscs(state.board);
     if (p0 > p1) return 0;
     if (p1 > p0) return 1;

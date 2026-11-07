@@ -31,7 +31,9 @@ describe('ship placement', () => {
   it('creates a complete non-overlapping fleet', () => {
     const { grid, ships } = randomPlacement();
     expect(ships.map((ship) => ship.size)).toEqual([...SHIP_SIZES]);
-    expect(grid.flat().filter((cell) => cell === 'ship')).toHaveLength(SHIP_SIZES.reduce((sum, size) => sum + size, 0));
+    expect(grid.flat().filter((cell) => cell === 'ship')).toHaveLength(
+      SHIP_SIZES.reduce((sum, size) => sum + size, 0),
+    );
     expect(shipsRemaining(grid, ships)).toBe(SHIP_SIZES.length);
   });
 });
@@ -39,7 +41,13 @@ describe('ship placement', () => {
 describe('shots', () => {
   it('marks a miss and a hit, and reports when a ship is sunk', () => {
     const placement = { row: 3, col: 2, size: 2, horizontal: true };
-    const grid = placeShip(emptyGrid(), placement.row, placement.col, placement.size, placement.horizontal);
+    const grid = placeShip(
+      emptyGrid(),
+      placement.row,
+      placement.col,
+      placement.size,
+      placement.horizontal,
+    );
     const first = shoot(grid, [placement], 3, 2);
     expect(first.grid[3]?.[2]).toBe('hit');
     expect(first.result).toEqual({ hit: true, sunk: false, shipIndex: null });
@@ -57,7 +65,13 @@ describe('shots', () => {
 
   it('does not count a repeated shot and rejects coordinates outside the board', () => {
     const placement = { row: 1, col: 1, size: 2, horizontal: true };
-    const grid = placeShip(emptyGrid(), placement.row, placement.col, placement.size, placement.horizontal);
+    const grid = placeShip(
+      emptyGrid(),
+      placement.row,
+      placement.col,
+      placement.size,
+      placement.horizontal,
+    );
     const hit = shoot(grid, [placement], 1, 1);
     expect(shoot(hit.grid, [placement], 1, 1).result).toEqual({
       hit: false,

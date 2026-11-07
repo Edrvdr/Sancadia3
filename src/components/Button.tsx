@@ -20,7 +20,9 @@ export default function Button({
       tap();
       onClickProp?.(event);
     },
-    [onClickProp, tap]
+    [onClickProp, tap],
   );
-  return <button type={type} className={buttonStyles(variant, className)} {...props} onClick={onClick} />;
+  return (
+    <button type={type} className={buttonStyles(variant, className)} {...props} onClick={onClick} />
+  );
 }

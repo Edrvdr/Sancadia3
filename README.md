@@ -13,17 +13,17 @@ npm run dev
 
 Useful scripts:
 
-| Script | Purpose |
-| --- | --- |
-| `npm run check` | Typecheck, lint, formatting check and unit tests |
-| `npm run typecheck` | TypeScript compiler |
-| `npm run lint` | ESLint |
-| `npm run format` | Format project files with Prettier |
-| `npm run format:check` | Check formatting without changing files |
-| `npm test` | Run Vitest |
-| `npm test -- --coverage` | Run tests and generate coverage |
-| `npm run build` | Create the production app in `dist/` |
-| `npm run preview` | Preview a production build locally |
+| Script                   | Purpose                                          |
+| ------------------------ | ------------------------------------------------ |
+| `npm run check`          | Typecheck, lint, formatting check and unit tests |
+| `npm run typecheck`      | TypeScript compiler                              |
+| `npm run lint`           | ESLint                                           |
+| `npm run format`         | Format project files with Prettier               |
+| `npm run format:check`   | Check formatting without changing files          |
+| `npm test`               | Run Vitest                                       |
+| `npm test -- --coverage` | Run tests and generate coverage                  |
+| `npm run build`          | Create the production app in `dist/`             |
+| `npm run preview`        | Preview a production build locally               |
 
 ### Environment
 

@@ -32,7 +32,9 @@ export default function SegmentedControl<T extends string | number>({
             aria-checked={selected}
             onClick={() => onChange(option.value)}
             className={`min-h-11 rounded-xl px-3 text-sm font-semibold transition duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 ${
-              selected ? 'bg-primary text-primary-foreground shadow-sm' : 'text-foreground hover:bg-primary-soft'
+              selected
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-foreground hover:bg-primary-soft'
             }`}
           >
             {option.label}

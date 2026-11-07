@@ -1,5 +1,6 @@
 export function vibrate(enabled: boolean, pattern: number | number[]) {
-  if (!enabled || typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+  if (!enabled || typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function')
+    return;
   navigator.vibrate(pattern);
 }
 

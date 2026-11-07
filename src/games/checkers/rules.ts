@@ -45,7 +45,7 @@ function deepJumps(
   col: number,
   piece: PieceType,
   player: Player,
-  captured: readonly (readonly [number, number])[]
+  captured: readonly (readonly [number, number])[],
 ): CheckersMove[] {
   const results: CheckersMove[] = [];
   for (const dr of pieceRows(piece, player)) {
@@ -71,16 +71,7 @@ function deepJumps(
       const landBoardRow = tempBoard[landR];
       if (landBoardRow) landBoardRow[landC] = { player, type: piece };
       const newCaptured = [...captured, [midR, midC] as const];
-      const deeper = deepJumps(
-        tempBoard,
-        startR,
-        startC,
-        landR,
-        landC,
-        piece,
-        player,
-        newCaptured
-      );
+      const deeper = deepJumps(tempBoard, startR, startC, landR, landC, piece, player, newCaptured);
       if (deeper.length === 0) {
         results.push({ from: [startR, startC], to: [landR, landC], captures: newCaptured });
       } else {
@@ -96,7 +87,7 @@ function allJumpsForPiece(
   row: number,
   col: number,
   piece: PieceType,
-  player: Player
+  player: Player,
 ): CheckersMove[] {
   const occupant = board[row]?.[col] ?? null;
   if (occupant === null || occupant.player !== player) return [];
@@ -108,7 +99,7 @@ function simpleMovesForPiece(
   row: number,
   col: number,
   piece: PieceType,
-  player: Player
+  player: Player,
 ): CheckersMove[] {
   const moves: CheckersMove[] = [];
   for (const dr of pieceRows(piece, player)) {
@@ -178,7 +169,7 @@ function resultOf(state: CheckersState): Winner {
       if (occ !== null) {
         const playerIndex = occ.player;
         if (playerIndex === 0 || playerIndex === 1) {
-          pieces[playerIndex]++;
+          pieces[playerIndex] = (pieces[playerIndex] ?? 0) + 1;
         }
       }
     }
@@ -238,7 +229,9 @@ export function movesEqual(a: CheckersMove, b: CheckersMove): boolean {
 export const checkers: GameEngine<CheckersState, CheckersMove> = {
   id: 'checkers',
   initialState: () => {
-    const board: Occupant[][] = Array.from({ length: SIZE }, () => Array<Occupant>(SIZE).fill(null));
+    const board: Occupant[][] = Array.from({ length: SIZE }, () =>
+      Array<Occupant>(SIZE).fill(null),
+    );
     for (let r = 0; r < SIZE; r++) {
       const row = board[r];
       if (!row) continue;

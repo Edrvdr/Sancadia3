@@ -81,7 +81,7 @@ export function requestMove<State, Move>(
   gameId: WorkerGameId,
   state: State,
   difficulty: Difficulty,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<Move | null> {
   cancelPending();
   if (signal?.aborted) return Promise.reject(new AIRequestCancelledError());

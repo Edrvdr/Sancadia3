@@ -58,7 +58,7 @@ describe('win detection', () => {
         const rowPattern = pattern[row % 4];
         const cell = rowPattern?.[col % 4] ?? 0;
         return Number(cell) as Player;
-      })
+      }),
     );
     const state = stateWith(board);
     expect(findWin(board)).toBeNull();

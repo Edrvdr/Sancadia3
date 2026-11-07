@@ -39,7 +39,10 @@ export default function StatsProvider({ children }: { children: ReactNode }) {
     setStats(empty);
   }, []);
 
-  const value = useMemo<StatsContextValue>(() => ({ stats, recordResult, resetStats }), [stats, recordResult, resetStats]);
+  const value = useMemo<StatsContextValue>(
+    () => ({ stats, recordResult, resetStats }),
+    [stats, recordResult, resetStats],
+  );
 
   return <StatsContext.Provider value={value}>{children}</StatsContext.Provider>;
 }

@@ -16,7 +16,8 @@ const MARKS = ['O', 'X'] as const;
 export default function TicTacToeMatch({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: ticTacToe, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } =
+    match;
 
   const winLine = findWin(state.board)?.line ?? null;
   const summary = result === null ? null : describeResult(result, config, humanSide);
@@ -25,7 +26,11 @@ export default function TicTacToeMatch({ config }: { config: MatchConfig }) {
     <div className="flex flex-1 flex-col gap-6">
       <Scoreboard entries={scoreEntries(config, humanSide, scores)} />
 
-      <div role="status" aria-live="polite" className="flex min-h-11 items-center justify-center gap-3">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-11 items-center justify-center gap-3"
+      >
         <p className="font-semibold">{statusText(result, turn, config, humanSide)}</p>
         {computerTurn && <ThinkingDots />}
       </div>
@@ -47,7 +52,10 @@ export default function TicTacToeMatch({ config }: { config: MatchConfig }) {
           return (
             <>
               {highlighted && (
-                <span className="absolute inset-1.5 animate-fade-in rounded-xl bg-primary-soft" aria-hidden="true" />
+                <span
+                  className="absolute inset-1.5 animate-fade-in rounded-xl bg-primary-soft"
+                  aria-hidden="true"
+                />
               )}
               <span className={`relative ${cell === 0 ? 'text-primary' : 'text-accent'}`}>
                 {cell === null ? '' : MARKS[cell]}

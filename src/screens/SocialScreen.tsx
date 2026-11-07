@@ -17,7 +17,9 @@ export default function SocialScreen() {
               <p className="text-sm text-subtle">Your friends list and party lobbies.</p>
             </div>
           </div>
-          <p className="text-sm text-subtle">Coming soon. You'll be able to add friends, start parties, and chat here.</p>
+          <p className="text-sm text-subtle">
+            Coming soon. You'll be able to add friends, start parties, and chat here.
+          </p>
         </Card>
         <Card className="grid gap-4">
           <div className="flex items-center gap-3">

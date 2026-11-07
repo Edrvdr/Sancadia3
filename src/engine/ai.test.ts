@@ -192,7 +192,7 @@ describe('getBestMove options', () => {
         maxDepth: 2,
         evaluate: deepEvaluate,
         timeLimitMs: 100,
-      })
+      }),
     ).toBe('b');
   });
 
@@ -203,7 +203,7 @@ describe('getBestMove options', () => {
         maxDepth: 2,
         evaluate: deepEvaluate,
         timeLimitMs: 60_000,
-      })
+      }),
     ).toBe('a');
   });
 
@@ -230,7 +230,8 @@ describe('getBestMove options', () => {
     };
     const engine: GameEngine<TreeState, string> = {
       ...base,
-      legalMoves: (state) => (state.id === 'blocked' ? [] : Object.keys(getNode(state.id).children)),
+      legalMoves: (state) =>
+        state.id === 'blocked' ? [] : Object.keys(getNode(state.id).children),
       passTurn: (state) => ({ id: 'ready', player: state.player === 0 ? 1 : 0 }),
       applyMove: (state, move) => {
         const nextId = getNode(state.id).children[move];
