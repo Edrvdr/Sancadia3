@@ -18,11 +18,12 @@ const PATTERN_SCORE = [0, 1, 8, 80, 1200, 1_000_000];
 const DEFENCE_WEIGHT = 1.15;
 
 function windowScore(count: number, openEnds: number): number {
-  if (count === WIN_LENGTH) return PATTERN_SCORE[count];
-  if (count === 4) return openEnds === 2 ? 40_000 : openEnds === 1 ? 4_000 : PATTERN_SCORE[count];
-  if (count === 3) return openEnds === 2 ? 500 : openEnds === 1 ? 60 : PATTERN_SCORE[count];
-  if (count === 2) return openEnds === 2 ? 30 : openEnds === 1 ? 5 : PATTERN_SCORE[count];
-  return PATTERN_SCORE[count] * (openEnds === 2 ? 1 : 0.5);
+  const base = PATTERN_SCORE[count] ?? 0;
+  if (count === WIN_LENGTH) return base;
+  if (count === 4) return openEnds === 2 ? 40_000 : openEnds === 1 ? 4_000 : base;
+  if (count === 3) return openEnds === 2 ? 500 : openEnds === 1 ? 60 : base;
+  if (count === 2) return openEnds === 2 ? 30 : openEnds === 1 ? 5 : base;
+  return base * (openEnds === 2 ? 1 : 0.5);
 }
 
 function countWindow(
@@ -36,7 +37,7 @@ function countWindow(
   let count = 0;
   let opponentFound = false;
   for (let step = 0; step < WIN_LENGTH; step++) {
-    const cell = board[row + dRow * step][col + dCol * step];
+    const cell = board[row + dRow * step]?.[col + dCol * step] ?? null;
     if (cell === player) count++;
     else if (cell !== null) opponentFound = true;
   }
@@ -47,10 +48,10 @@ function countWindow(
   const beforeCol = col - dCol;
   const afterRow = row + dRow * WIN_LENGTH;
   const afterCol = col + dCol * WIN_LENGTH;
-  if (beforeRow >= 0 && beforeRow < SIZE && beforeCol >= 0 && beforeCol < SIZE && board[beforeRow][beforeCol] === null) {
+  if (beforeRow >= 0 && beforeRow < SIZE && beforeCol >= 0 && beforeCol < SIZE && (board[beforeRow]?.[beforeCol] ?? null) === null) {
     openEnds++;
   }
-  if (afterRow >= 0 && afterRow < SIZE && afterCol >= 0 && afterCol < SIZE && board[afterRow][afterCol] === null) {
+  if (afterRow >= 0 && afterRow < SIZE && afterCol >= 0 && afterCol < SIZE && (board[afterRow]?.[afterCol] ?? null) === null) {
     openEnds++;
   }
   return windowScore(count, openEnds);
@@ -76,7 +77,7 @@ export function evaluate(state: GomokuState, player: Player): number {
   let centerScore = 0;
   for (let row = 0; row < SIZE; row++) {
     for (let col = 0; col < SIZE; col++) {
-      const cell: Cell = state.board[row][col];
+      const cell: Cell = state.board[row]?.[col] ?? null;
       const centerBonus = Math.max(0, 7 - Math.max(Math.abs(7 - row), Math.abs(7 - col)));
       if (cell === player) centerScore += centerBonus;
       else if (cell === opponent) centerScore -= centerBonus;

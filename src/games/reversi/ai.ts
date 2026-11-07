@@ -23,9 +23,10 @@ export function evaluate(state: ReversiState, player: Player): number {
   let score = 0;
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      const cell: Cell = state.board[r][c];
-      if (cell === player) score += WEIGHTS[r][c];
-      else if (cell === opponent) score -= WEIGHTS[r][c];
+      const cell: Cell = state.board[r]?.[c] ?? null;
+      const weight = WEIGHTS[r]?.[c] ?? 0;
+      if (cell === player) score += weight;
+      else if (cell === opponent) score -= weight;
     }
   }
   const myMoves = reversi.legalMoves(state).length;

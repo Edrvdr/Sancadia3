@@ -48,7 +48,7 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
         return;
       }
     }
-    const piece = state.board[row][col];
+    const piece = state.board[row]?.[col] ?? null;
     if (piece !== null && piece.player === turn && selectableOrigins.some(([r, c]) => r === row && c === col)) {
       setSelected([row, col]);
     } else {
@@ -77,7 +77,7 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
           const row = Math.floor(index / SIZE);
           const col = index % SIZE;
           const dark = (row + col) % 2 === 1;
-          const piece = state.board[row][col];
+          const piece = state.board[row]?.[col] ?? null;
           const canSelect = !computerTurn && !over && selectableOrigins.some(([r, c]) => r === row && c === col);
           const isSelected = selected !== null && samePos(selected, row, col);
           const isDest = destinations.has(`${row},${col}`);

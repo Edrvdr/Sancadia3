@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const emailInitial = (user?.email ?? '?').charAt(0).toUpperCase();
 
   return (
     <>
@@ -14,7 +15,7 @@ export default function ProfileScreen() {
       <div className="grid gap-4 pb-4">
         <Card className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-soft text-2xl font-bold text-primary">
-            {(user?.email ?? '?')[0].toUpperCase()}
+            {emailInitial}
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-lg font-bold">{user ? user.email : 'Guest'}</h2>

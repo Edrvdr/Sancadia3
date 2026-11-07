@@ -50,7 +50,16 @@ describe('AI worker client', () => {
     const state = ticTacToe.initialState();
     const request = requestMove<TicTacToeState, number>('noughts-and-crosses', state, 'beginner');
     const worker = MockWorker.instances[0];
-    const { requestId } = worker.messages[0] as RequestMessage;
+    expect(worker).toBeDefined();
+    if (!worker) {
+      throw new Error('Expected a worker to be created.');
+    }
+    const firstMessage = worker.messages[0];
+    expect(firstMessage).toBeDefined();
+    if (!firstMessage) {
+      throw new Error('Expected a worker request message.');
+    }
+    const { requestId } = firstMessage as RequestMessage;
     worker.send({ requestId, move: 4 });
 
     await expect(request).resolves.toBe(4);
@@ -68,7 +77,16 @@ describe('AI worker client', () => {
       controller.signal
     );
     const oldWorker = MockWorker.instances[0];
-    const oldId = (oldWorker.messages[0] as RequestMessage).requestId;
+    expect(oldWorker).toBeDefined();
+    if (!oldWorker) {
+      throw new Error('Expected the first worker to be created.');
+    }
+    const oldFirstMessage = oldWorker.messages[0];
+    expect(oldFirstMessage).toBeDefined();
+    if (!oldFirstMessage) {
+      throw new Error('Expected the first worker request message.');
+    }
+    const oldId = (oldFirstMessage as RequestMessage).requestId;
 
     controller.abort();
     await expect(stale).rejects.toBeInstanceOf(AIRequestCancelledError);
@@ -76,7 +94,16 @@ describe('AI worker client', () => {
 
     const current = requestMove<TicTacToeState, number>('noughts-and-crosses', state, 'beginner');
     const currentWorker = MockWorker.instances[1];
-    const currentId = (currentWorker.messages[0] as RequestMessage).requestId;
+    expect(currentWorker).toBeDefined();
+    if (!currentWorker) {
+      throw new Error('Expected the second worker to be created.');
+    }
+    const currentFirstMessage = currentWorker.messages[0];
+    expect(currentFirstMessage).toBeDefined();
+    if (!currentFirstMessage) {
+      throw new Error('Expected the second worker request message.');
+    }
+    const currentId = (currentFirstMessage as RequestMessage).requestId;
     oldWorker.send({ requestId: oldId, move: 0 });
     currentWorker.send({ requestId: currentId, move: 4 });
     await expect(current).resolves.toBe(4);

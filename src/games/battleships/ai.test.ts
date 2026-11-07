@@ -6,29 +6,36 @@ describe('Battleships AI', () => {
   it('always chooses an untried cell', () => {
     const state = createAiState([]);
     const shot = chooseAiShot(state, 'professional');
+    const [row, col] = shot;
     expect(shot).toHaveLength(2);
-    expect(state.targetGrid[shot[0]][shot[1]]).toBe('empty');
+    expect(row).toBeDefined();
+    expect(col).toBeDefined();
+    expect(state.targetGrid[row ?? 0]?.[col ?? 0]).toBe('empty');
   });
 
   it('targets adjacent cells after a hit and clears the target after a sunk ship', () => {
     const state = createAiState([]);
     const afterHit = updateAiState(state, [4, 4], 'hit', false);
     const nextShot = chooseAiShot(afterHit, 'professional');
-    expect(Math.abs(nextShot[0] - 4) + Math.abs(nextShot[1] - 4)).toBe(1);
+    const [nextRow, nextCol] = nextShot;
+    expect(nextRow).toBeDefined();
+    expect(nextCol).toBeDefined();
+    expect(Math.abs((nextRow ?? 4) - 4) + Math.abs((nextCol ?? 4) - 4)).toBe(1);
 
     const afterSunk = updateAiState(afterHit, nextShot, 'hit', true);
     expect(afterSunk.hits).toEqual([]);
     expect(afterSunk.queue).toEqual([]);
-    expect(afterSunk.targetGrid[4][4]).toBe('hit');
-    expect(afterSunk.targetGrid[nextShot[0]][nextShot[1]]).toBe('hit');
+    expect(afterSunk.targetGrid[4]?.[4]).toBe('hit');
+    expect(afterSunk.targetGrid[nextRow ?? 0]?.[nextCol ?? 0]).toBe('hit');
   });
 
   it('stays within board bounds at an edge', () => {
     const state = updateAiState(createAiState([]), [0, 0], 'hit', false);
     const shot = chooseAiShot(state, 'professional');
-    expect(shot[0]).toBeGreaterThanOrEqual(0);
-    expect(shot[1]).toBeGreaterThanOrEqual(0);
-    expect(shot[0]).toBeLessThan(SIZE);
-    expect(shot[1]).toBeLessThan(SIZE);
+    const [row, col] = shot;
+    expect(row).toBeGreaterThanOrEqual(0);
+    expect(col).toBeGreaterThanOrEqual(0);
+    expect(row).toBeLessThan(SIZE);
+    expect(col).toBeLessThan(SIZE);
   });
 });

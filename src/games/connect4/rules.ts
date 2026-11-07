@@ -34,11 +34,11 @@ function inBounds(row: number, col: number): boolean {
 export function findWin(board: Board): WinningFour | null {
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
-      const owner = board[row][col];
+      const owner = board[row]?.[col] ?? null;
       if (owner === null) continue;
       for (const [dRow, dCol] of DIRECTIONS) {
         const cells = [0, 1, 2, 3].map((step) => [row + dRow * step, col + dCol * step] as const);
-        const fours = cells.every(([r, c]) => inBounds(r, c) && board[r][c] === owner);
+        const fours = cells.every(([r, c]) => inBounds(r, c) && (board[r]?.[c] ?? null) === owner);
         if (fours) return { owner, cells };
       }
     }
@@ -48,7 +48,7 @@ export function findWin(board: Board): WinningFour | null {
 
 export function landingRow(board: Board, col: number): number | null {
   for (let row = 0; row < ROWS; row++) {
-    if (board[row][col] === null) return row;
+    if ((board[row]?.[col] ?? null) === null) return row;
   }
   return null;
 }
@@ -76,8 +76,14 @@ export const connect4: GameEngine<Connect4State, Connect4Move> = {
     if (!legalMovesFor(state).includes(move)) {
       throw new Error(`Illegal move: ${move}`);
     }
-    const row = landingRow(state.board, move) as number;
-    const board = state.board.map((cells, r) => (r === row ? cells.map((cell, c) => (c === move ? state.turn : cell)) : [...cells]));
+    const row = landingRow(state.board, move);
+    if (row === null) {
+      throw new Error(`Illegal move: ${move}`);
+    }
+    const board = state.board.map((cells, r) => {
+      if (r !== row) return [...cells];
+      return cells.map((cell, c) => (c === move ? state.turn : cell));
+    });
     return { board, turn: state.turn === 0 ? 1 : 0 };
   },
   isTerminal: (state) => resultOf(state.board) !== null,

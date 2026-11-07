@@ -55,14 +55,21 @@ function deepJumps(
       const landR = row + dr * 2;
       const landC = col + dc * 2;
       if (!inBounds(landR, landC)) continue;
-      const mid = board[midR][midC];
+      const midRow = board[midR];
+      if (!midRow) continue;
+      const mid = midRow[midC] ?? null;
       if (mid === null || mid.player === player) continue;
-      if (board[landR][landC] !== null) continue;
+      const landRow = board[landR];
+      if (!landRow) continue;
+      if (landRow[landC] !== null) continue;
 
       const tempBoard = cloneBoard(board);
-      tempBoard[row][col] = null;
-      tempBoard[midR][midC] = null;
-      tempBoard[landR][landC] = { player, type: piece };
+      const boardRow = tempBoard[row];
+      if (boardRow) boardRow[col] = null;
+      const midBoardRow = tempBoard[midR];
+      if (midBoardRow) midBoardRow[midC] = null;
+      const landBoardRow = tempBoard[landR];
+      if (landBoardRow) landBoardRow[landC] = { player, type: piece };
       const newCaptured = [...captured, [midR, midC] as const];
       const deeper = deepJumps(
         tempBoard,
@@ -91,7 +98,7 @@ function allJumpsForPiece(
   piece: PieceType,
   player: Player
 ): CheckersMove[] {
-  const occupant = board[row][col];
+  const occupant = board[row]?.[col] ?? null;
   if (occupant === null || occupant.player !== player) return [];
   return deepJumps(board, row, col, row, col, piece, player, []);
 }
@@ -109,7 +116,9 @@ function simpleMovesForPiece(
       const nr = row + dr;
       const nc = col + dc;
       if (!inBounds(nr, nc)) continue;
-      if (board[nr][nc] !== null) continue;
+      const targetRow = board[nr];
+      if (!targetRow) continue;
+      if (targetRow[nc] !== null) continue;
       moves.push({ from: [row, col], to: [nr, nc], captures: [] });
     }
   }
@@ -120,7 +129,7 @@ function allJumpsOnBoard(board: Board, player: Player): CheckersMove[] {
   const jumps: CheckersMove[] = [];
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      const occ = board[r][c];
+      const occ = board[r]?.[c] ?? null;
       if (occ === null || occ.player !== player) continue;
       jumps.push(...allJumpsForPiece(board, r, c, occ.type, player));
     }
@@ -131,7 +140,7 @@ function allJumpsOnBoard(board: Board, player: Player): CheckersMove[] {
 export function legalMovesFor(state: CheckersState): CheckersMove[] {
   if (state.mustContinueFrom !== null) {
     const [r, c] = state.mustContinueFrom;
-    const occ = state.board[r][c];
+    const occ = state.board[r]?.[c] ?? null;
     if (occ !== null) {
       const jumps = allJumpsForPiece(state.board, r, c, occ.type, state.turn);
       if (jumps.length > 0) return jumps;
@@ -145,7 +154,7 @@ export function legalMovesFor(state: CheckersState): CheckersMove[] {
   const moves: CheckersMove[] = [];
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      const occ = state.board[r][c];
+      const occ = state.board[r]?.[c] ?? null;
       if (occ === null || occ.player !== state.turn) continue;
       moves.push(...simpleMovesForPiece(state.board, r, c, occ.type, state.turn));
     }
@@ -165,12 +174,19 @@ function resultOf(state: CheckersState): Winner {
   const pieces = [0, 0];
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      const occ = state.board[r][c];
-      if (occ !== null) pieces[occ.player]++;
+      const occ = state.board[r]?.[c] ?? null;
+      if (occ !== null) {
+        const playerIndex = occ.player;
+        if (playerIndex === 0 || playerIndex === 1) {
+          pieces[playerIndex]++;
+        }
+      }
     }
   }
-  if (pieces[0] === 0) return 1;
-  if (pieces[1] === 0) return 0;
+  const p0 = pieces[0] ?? 0;
+  const p1 = pieces[1] ?? 0;
+  if (p0 === 0) return 1;
+  if (p1 === 0) return 0;
   if (legalMovesFor(state).length === 0) {
     return state.turn === 0 ? 1 : 0;
   }
@@ -181,13 +197,18 @@ export function applyMoveInternal(state: CheckersState, move: CheckersMove): Che
   const board = cloneBoard(state.board);
   const [fr, fc] = move.from;
   const [tr, tc] = move.to;
-  const occupant = board[fr][fc];
-  board[fr][fc] = null;
+  const fromRow = board[fr];
+  if (!fromRow) throw new Error(`Invalid move from row: ${fr}`);
+  const occupant = fromRow[fc] ?? null;
+  fromRow[fc] = null;
   for (const [cr, cc] of move.captures) {
-    board[cr][cc] = null;
+    const captureRow = board[cr];
+    if (captureRow) captureRow[cc] = null;
   }
+  const targetRow = board[tr];
+  if (!targetRow) throw new Error(`Invalid move to row: ${tr}`);
   const promoted = maybePromote(occupant, tr);
-  board[tr][tc] = promoted;
+  targetRow[tc] = promoted;
 
   const wasMan = occupant !== null && occupant.type === 'man';
   const justPromoted = wasMan && promoted !== null && promoted.type === 'king';
@@ -207,7 +228,11 @@ export function movesEqual(a: CheckersMove, b: CheckersMove): boolean {
   if (a.from[0] !== b.from[0] || a.from[1] !== b.from[1]) return false;
   if (a.to[0] !== b.to[0] || a.to[1] !== b.to[1]) return false;
   if (a.captures.length !== b.captures.length) return false;
-  return a.captures.every((ca, i) => ca[0] === b.captures[i][0] && ca[1] === b.captures[i][1]);
+  return a.captures.every((ca, i) => {
+    const other = b.captures[i];
+    if (!other) return false;
+    return ca[0] === other[0] && ca[1] === other[1];
+  });
 }
 
 export const checkers: GameEngine<CheckersState, CheckersMove> = {
@@ -215,10 +240,12 @@ export const checkers: GameEngine<CheckersState, CheckersMove> = {
   initialState: () => {
     const board: Occupant[][] = Array.from({ length: SIZE }, () => Array<Occupant>(SIZE).fill(null));
     for (let r = 0; r < SIZE; r++) {
+      const row = board[r];
+      if (!row) continue;
       for (let c = 0; c < SIZE; c++) {
         if (!isDark(r, c)) continue;
-        if (r < 3) board[r][c] = { player: 1, type: 'man' };
-        else if (r > 4) board[r][c] = { player: 0, type: 'man' };
+        if (r < 3) row[c] = { player: 1, type: 'man' };
+        else if (r > 4) row[c] = { player: 0, type: 'man' };
       }
     }
     return { board, turn: 0, mustContinueFrom: null };

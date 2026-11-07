@@ -33,7 +33,10 @@ describe('win detection', () => {
     ['down-left diagonal', 3, 7, 1, -1],
   ])('detects five in a row %s', (_direction, row, col, dRow, dCol) => {
     const board = emptyBoard();
-    for (let index = 0; index < 5; index++) board[row + dRow * index][col + dCol * index] = 1;
+    for (let index = 0; index < 5; index++) {
+      const targetRow = board[row + dRow * index];
+      if (targetRow) targetRow[col + dCol * index] = 1;
+    }
     expect(findWin(board)?.owner).toBe(1);
     expect(gomoku.winner(stateWith(board))).toBe(1);
     expect(gomoku.isTerminal(stateWith(board))).toBe(true);
@@ -41,14 +44,21 @@ describe('win detection', () => {
 
   it('accepts a run longer than five and returns a five-cell winning line', () => {
     const board = emptyBoard();
-    for (let col = 3; col < 9; col++) board[7][col] = 0;
+    const row7 = board[7];
+    if (row7) {
+      for (let col = 3; col < 9; col++) row7[col] = 0;
+    }
     expect(findWin(board)?.cells).toHaveLength(5);
   });
 
   it('reports a draw when the full board has no five in a row', () => {
     const pattern = ['0001', '0001', '0100', '1011'];
     const board = Array.from({ length: SIZE }, (_, row) =>
-      Array.from({ length: SIZE }, (_, col) => Number(pattern[row % 4][col % 4]) as Player)
+      Array.from({ length: SIZE }, (_, col) => {
+        const rowPattern = pattern[row % 4];
+        const cell = rowPattern?.[col % 4] ?? 0;
+        return Number(cell) as Player;
+      })
     );
     const state = stateWith(board);
     expect(findWin(board)).toBeNull();
@@ -64,7 +74,8 @@ describe('moves and draws', () => {
 
   it('keeps AI candidates within two squares of an existing stone', () => {
     const board = emptyBoard();
-    board[7][7] = 0;
+    const row7 = board[7];
+    if (row7) row7[7] = 0;
     const candidates = candidateMovesFor(stateWith(board));
     expect(candidates).toContainEqual({ row: 5, col: 5 });
     expect(candidates).not.toContainEqual({ row: 4, col: 7 });
@@ -80,8 +91,8 @@ describe('moves and draws', () => {
   it('does not mutate the source board', () => {
     const state = deepFreeze(gomoku.initialState());
     const next = gomoku.applyMove(state, { row: 7, col: 7 });
-    expect(state.board[7][7]).toBeNull();
-    expect(next.board[7][7]).toBe(0);
+    expect(state.board[7]?.[7]).toBeNull();
+    expect(next.board[7]?.[7]).toBe(0);
     expect(next.turn).toBe(1);
   });
 });

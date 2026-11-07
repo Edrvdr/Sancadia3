@@ -27,8 +27,8 @@ export interface WinningLine {
 
 export function findWin(board: readonly Cell[]): WinningLine | null {
   for (const line of WIN_LINES) {
-    const owner = board[line[0]];
-    if (owner !== null && owner === board[line[1]] && owner === board[line[2]]) {
+    const owner = board[line[0]] ?? null;
+    if (owner !== null && owner === (board[line[1]] ?? null) && owner === (board[line[2]] ?? null)) {
       return { owner, line };
     }
   }

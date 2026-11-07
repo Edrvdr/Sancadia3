@@ -13,10 +13,12 @@ describe('stats', () => {
   it('records wins, points and streaks by game and difficulty', () => {
     const first = recordGameResult(emptyStats(), win);
     const second = recordGameResult(first.stats, { ...win, resultId: 'match-2' });
-    const record = second.stats.games['connect-4'].computer.beginner;
+    const record = second.stats.games['connect-4']?.computer.beginner;
+    expect(record).toBeDefined();
 
     expect(first.pointsEarned).toBe(15);
     expect(second.pointsEarned).toBe(20);
+    if (!record) throw new Error('Missing connect-4 stats');
     expect(record).toMatchObject({ played: 2, wins: 2, currentWinStreak: 2, bestWinStreak: 2 });
     expect(second.stats.totalPoints).toBe(35);
   });
@@ -26,14 +28,19 @@ describe('stats', () => {
     const repeated = recordGameResult(first.stats, win);
     expect(repeated.stats).toBe(first.stats);
     expect(repeated.pointsEarned).toBe(0);
-    expect(repeated.stats.games['connect-4'].computer.beginner.played).toBe(1);
+    const record = repeated.stats.games['connect-4']?.computer.beginner;
+    expect(record).toBeDefined();
+    if (!record) throw new Error('Missing connect-4 stats');
+    expect(record.played).toBe(1);
   });
 
   it('resets the current streak after a draw or loss but preserves the best', () => {
     const first = recordGameResult(emptyStats(), win);
     const second = recordGameResult(first.stats, { ...win, resultId: 'match-2' });
     const third = recordGameResult(second.stats, { ...win, resultId: 'match-3', outcome: 'draw' });
-    const record = third.stats.games['connect-4'].computer.beginner;
+    const record = third.stats.games['connect-4']?.computer.beginner;
+    expect(record).toBeDefined();
+    if (!record) throw new Error('Missing connect-4 stats');
     expect(record).toMatchObject({ currentWinStreak: 0, bestWinStreak: 2, draws: 1 });
   });
 
@@ -44,7 +51,10 @@ describe('stats', () => {
       mode: 'two-player',
       outcome: 'win',
     });
-    expect(result.stats.games.gomoku.twoPlayerPlayed).toBe(1);
+    const gomokuStats = result.stats.games.gomoku;
+    expect(gomokuStats).toBeDefined();
+    if (!gomokuStats) throw new Error('Missing gomoku stats');
+    expect(gomokuStats.twoPlayerPlayed).toBe(1);
     expect(result.stats.totalPoints).toBe(0);
     expect(result.pointsEarned).toBe(0);
   });

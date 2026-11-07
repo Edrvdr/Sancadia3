@@ -40,8 +40,8 @@ describe('moves', () => {
     const state = reversi.initialState();
     expect(flipsForMove(state.board, [2, 4], 0)).toEqual([[3, 4]]);
     const next = reversi.applyMove(state, [2, 4]);
-    expect(next.board[2][4]).toBe(0);
-    expect(next.board[3][4]).toBe(0);
+    expect(next.board[2]?.[4]).toBe(0);
+    expect(next.board[3]?.[4]).toBe(0);
     expect(next.turn).toBe(1);
     expect(scoreOf(next.board)).toEqual([4, 1]);
   });
@@ -56,17 +56,20 @@ describe('moves', () => {
   it('does not mutate the source board', () => {
     const state = deepFreeze(reversi.initialState());
     const next = reversi.applyMove(state, [2, 4]);
-    expect(state.board[2][4]).toBeNull();
-    expect(state.board[3][4]).toBe(1);
-    expect(next.board[3][4]).toBe(0);
+    expect(state.board[2]?.[4]).toBeNull();
+    expect(state.board[3]?.[4]).toBe(1);
+    expect(next.board[3]?.[4]).toBe(0);
   });
 });
 
 describe('passing and terminal results', () => {
   it('passes when the current player has no move but the opponent does', () => {
     const board = emptyBoard().map((row) => row.map(() => 0 as Cell));
-    board[0][0] = null;
-    board[0][2] = 1;
+    const firstRow = board[0];
+    if (firstRow) {
+      firstRow[0] = null;
+      firstRow[2] = 1;
+    }
     const state = stateWith(board);
 
     expect(legalMovesFor(state)).toEqual([]);
@@ -88,7 +91,8 @@ describe('passing and terminal results', () => {
     expect(reversi.isTerminal(state)).toBe(true);
     expect(reversi.winner(state)).toBe('draw');
 
-    board[0][0] = 1;
+    const firstRow = board[0];
+    if (firstRow) firstRow[0] = 1;
     expect(reversi.winner(stateWith(board))).toBe(1);
   });
 
@@ -98,7 +102,7 @@ describe('passing and terminal results', () => {
       const moves = legalMovesFor(state);
       state = moves.length === 0
         ? reversi.passTurn?.(state) ?? state
-        : reversi.applyMove(state, moves[0]);
+        : reversi.applyMove(state, moves[0] ?? [0, 0]);
     }
     expect(reversi.isTerminal(state)).toBe(true);
     expect(reversi.winner(state)).not.toBeNull();

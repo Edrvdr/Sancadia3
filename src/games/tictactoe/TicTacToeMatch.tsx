@@ -37,12 +37,12 @@ export default function TicTacToeMatch({ config }: { config: MatchConfig }) {
         disabled={computerTurn || over}
         onCellTap={(row, col) => match.playMove(row * 3 + col)}
         getCellLabel={(row, col) => {
-          const cell = state.board[row * 3 + col];
+          const cell = state.board[row * 3 + col] ?? null;
           return `Row ${row + 1}, column ${col + 1}, ${cell === null ? 'empty' : cell === 0 ? 'X' : 'O'}`;
         }}
         renderCell={(row, col) => {
           const index = row * 3 + col;
-          const cell = state.board[index];
+          const cell = state.board[index] ?? null;
           const highlighted = winLine !== null && winLine.includes(index);
           return (
             <>

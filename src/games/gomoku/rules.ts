@@ -35,7 +35,7 @@ function inBounds(row: number, col: number): boolean {
 export function findWin(board: Board): WinningLine | null {
   for (let row = 0; row < SIZE; row++) {
     for (let col = 0; col < SIZE; col++) {
-      const owner = board[row][col];
+      const owner = board[row]?.[col] ?? null;
       if (owner === null) continue;
 
       for (const [dRow, dCol] of DIRECTIONS) {
@@ -47,7 +47,7 @@ export function findWin(board: Board): WinningLine | null {
           row: row + dRow * index,
           col: col + dCol * index,
         }));
-        if (cells.every(({ row: r, col: c }) => board[r][c] === owner)) {
+        if (cells.every(({ row: r, col: c }) => (board[r]?.[c] ?? null) === owner)) {
           return { owner, cells };
         }
       }
@@ -62,13 +62,13 @@ export function candidateMovesFor(state: GomokuState): GomokuMove[] {
 
   for (let row = 0; row < SIZE; row++) {
     for (let col = 0; col < SIZE; col++) {
-      if (state.board[row][col] === null) continue;
+      if ((state.board[row]?.[col] ?? null) === null) continue;
       hasStone = true;
       for (let dRow = -2; dRow <= 2; dRow++) {
         for (let dCol = -2; dCol <= 2; dCol++) {
           const nextRow = row + dRow;
           const nextCol = col + dCol;
-          if (inBounds(nextRow, nextCol) && state.board[nextRow][nextCol] === null) {
+          if (inBounds(nextRow, nextCol) && (state.board[nextRow]?.[nextCol] ?? null) === null) {
             moves.set(`${nextRow},${nextCol}`, { row: nextRow, col: nextCol });
           }
         }
@@ -92,12 +92,12 @@ function scoreLine(board: Board, row: number, col: number, player: Player): numb
     for (const direction of [-1, 1]) {
       let nextRow = row + dRow * direction;
       let nextCol = col + dCol * direction;
-      while (inBounds(nextRow, nextCol) && board[nextRow][nextCol] === player) {
+      while (inBounds(nextRow, nextCol) && (board[nextRow]?.[nextCol] ?? null) === player) {
         count++;
         nextRow += dRow * direction;
         nextCol += dCol * direction;
       }
-      if (inBounds(nextRow, nextCol) && board[nextRow][nextCol] === null) openEnds++;
+      if (inBounds(nextRow, nextCol) && (board[nextRow]?.[nextCol] ?? null) === null) openEnds++;
     }
 
     if (count >= WIN_LENGTH) score += 1_000_000;
@@ -123,7 +123,7 @@ export function legalMovesFor(state: GomokuState): GomokuMove[] {
   const moves: GomokuMove[] = [];
   for (let row = 0; row < SIZE; row++) {
     for (let col = 0; col < SIZE; col++) {
-      if (state.board[row][col] === null) moves.push({ row, col });
+      if ((state.board[row]?.[col] ?? null) === null) moves.push({ row, col });
     }
   }
   return moves;
@@ -146,7 +146,11 @@ export const gomoku: GameEngine<GomokuState, GomokuMove> = {
     }
 
     const board = state.board.map((row) => [...row]);
-    board[move.row][move.col] = state.turn;
+    const targetRow = board[move.row];
+    if (!targetRow) {
+      throw new Error(`Illegal move: ${move.row},${move.col}`);
+    }
+    targetRow[move.col] = state.turn;
     return { board, turn: state.turn === 0 ? 1 : 0 };
   },
   isTerminal: (state) => findWin(state.board) !== null || isFull(state.board),

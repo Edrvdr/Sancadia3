@@ -8,7 +8,10 @@ function emptyBoard(): Cell[][] {
 
 function boardWith(cells: [number, number, Player][]): Cell[][] {
   const board = emptyBoard();
-  for (const [row, col, owner] of cells) board[row][col] = owner;
+  for (const [row, col, owner] of cells) {
+    const boardRow = board[row];
+    if (boardRow) boardRow[col] = owner;
+  }
   return board;
 }
 
@@ -90,9 +93,9 @@ describe('win detection', () => {
 describe('moves', () => {
   it('drops a piece to the lowest empty row', () => {
     const state = play([3, 3]);
-    expect(state.board[0][3]).toBe(0);
-    expect(state.board[1][3]).toBe(1);
-    expect(state.board[2][3]).toBeNull();
+    expect(state.board[0]?.[3]).toBe(0);
+    expect(state.board[1]?.[3]).toBe(1);
+    expect(state.board[2]?.[3]).toBeNull();
   });
 
   it('switches the turn after each move', () => {
@@ -141,8 +144,8 @@ describe('immutability', () => {
   it('does not change the state it is given when applying a move', () => {
     const state = deepFreeze(play([2]));
     const next = connect4.applyMove(state, 4);
-    expect(state.board[0][4]).toBeNull();
-    expect(next.board[0][4]).toBe(1);
+    expect(state.board[0]?.[4]).toBeNull();
+    expect(next.board[0]?.[4]).toBe(1);
     expect(next).not.toBe(state);
   });
 });

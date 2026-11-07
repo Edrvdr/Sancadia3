@@ -38,7 +38,10 @@ export function pickAiMove<State, Move>(
   if (moves.length === 0) return null;
 
   if (Math.random() < settings.mistakeChance) {
-    return moves[Math.floor(Math.random() * moves.length)];
+    const index = Math.floor(Math.random() * moves.length);
+    const move = moves[index];
+    if (move === undefined) return null;
+    return move;
   }
   return getBestMove(engine, state, {
     maxDepth: settings.maxDepth,

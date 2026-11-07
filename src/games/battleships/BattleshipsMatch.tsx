@@ -69,7 +69,7 @@ function Grid2D({
       {Array.from({ length: SIZE * SIZE }, (_, index) => {
         const row = Math.floor(index / SIZE);
         const col = index % SIZE;
-        const cell = grid[row][col];
+        const cell = grid[row]?.[col] ?? 'empty';
         return (
           <button
             key={index}
@@ -117,8 +117,8 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
 
   const over = result !== null;
   const computerTurn = isComputer && !over && turn === computerSide;
-  const setupGrid = grids[setupPlayer];
-  const setupShips = fleets[setupPlayer];
+  const setupGrid = grids[setupPlayer] ?? emptyGrid();
+  const setupShips = fleets[setupPlayer] ?? [];
   const allPlaced = placingIndex >= SHIP_SIZES.length || setupShips.length === SHIP_SIZES.length;
 
   const finishMatch = useCallback((winner: Player) => {
@@ -178,7 +178,7 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
 
   const handleSetupCellTap = (row: number, col: number) => {
     if (allPlaced) return;
-    const size = SHIP_SIZES[placingIndex];
+    const size = SHIP_SIZES[placingIndex] ?? 0;
     const horizontal = orientation === 'horizontal';
     if (!canPlace(setupGrid, row, col, size, horizontal)) return;
     setGrids((current) => replacePlayer(current, setupPlayer, placeShip(setupGrid, row, col, size, horizontal)));
@@ -191,10 +191,12 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
   const handleAttack = (row: number, col: number) => {
     if (phase !== 'play' || over || computerTurn) return;
     const targetPlayer = isComputer ? computerSide : otherPlayer(turn);
-    const targetGrid = grids[targetPlayer];
-    if (targetGrid[row][col] === 'hit' || targetGrid[row][col] === 'miss') return;
+    const targetGrid = grids[targetPlayer] ?? emptyGrid();
+    const targetFleet = fleets[targetPlayer] ?? [];
+    const cell = targetGrid[row]?.[col] ?? 'empty';
+    if (cell === 'hit' || cell === 'miss') return;
 
-    const shot = shoot(targetGrid, fleets[targetPlayer], row, col);
+    const shot = shoot(targetGrid, targetFleet, row, col);
     setGrids((current) => replacePlayer(current, targetPlayer, shot.grid));
     vibrate(vibrationEnabled, shot.result.sunk ? HAPTICS.gameEnd : HAPTICS.move);
 
@@ -208,8 +210,11 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
   const handleAiShot = useCallback(() => {
     if (config.mode !== 'computer' || !aiState || !computerTurn) return;
     const shot = chooseAiShot(aiState, config.difficulty);
-    const attackedGrid = grids[humanSide];
-    const outcome = shoot(attackedGrid, fleets[humanSide], shot[0], shot[1]);
+    const [shotRow, shotCol] = shot;
+    if (shotRow === undefined || shotCol === undefined) return;
+    const attackedGrid = grids[humanSide] ?? emptyGrid();
+    const humanFleet = fleets[humanSide] ?? [];
+    const outcome = shoot(attackedGrid, humanFleet, shotRow, shotCol);
     setGrids((current) => replacePlayer(current, humanSide, outcome.grid));
     setAiState(updateAiState(aiState, shot, outcome.result.hit ? 'hit' : 'miss', outcome.result.sunk));
     vibrate(vibrationEnabled, outcome.result.sunk ? HAPTICS.gameEnd : HAPTICS.move);
@@ -230,8 +235,10 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
   const summary = result === null ? null : describeResult(result, config, humanSide);
 
   if (phase === 'setup') {
-    const currentShip = allPlaced ? null : `${SHIP_NAMES[placingIndex]} (${SHIP_SIZES[placingIndex]})`;
-    const canStart = isComputer ? fleets[humanSide].length === SHIP_SIZES.length : allPlaced;
+    const shipName = allPlaced ? null : SHIP_NAMES[placingIndex] ?? 'Ship';
+    const currentShipSize = allPlaced ? 0 : SHIP_SIZES[placingIndex] ?? 0;
+    const currentShip = allPlaced ? null : `${shipName} (${currentShipSize})`;
+    const canStart = isComputer ? (fleets[humanSide] ?? []).length === SHIP_SIZES.length : allPlaced;
 
     return (
       <div className="flex flex-1 flex-col gap-4">
@@ -278,9 +285,9 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
             {Array.from({ length: SIZE * SIZE }, (_, index) => {
               const row = Math.floor(index / SIZE);
               const col = index % SIZE;
-              const cell = setupGrid[row][col];
+              const cell = setupGrid[row]?.[col] ?? 'empty';
               const isHover = hoverCell?.[0] === row && hoverCell[1] === col;
-              const size = allPlaced ? 0 : SHIP_SIZES[placingIndex];
+              const size = allPlaced ? 0 : SHIP_SIZES[placingIndex] ?? 0;
               const canFit = !allPlaced && canPlace(setupGrid, row, col, size, orientation === 'horizontal');
               const preview = new Set<string>();
               if (isHover && canFit) {
@@ -320,8 +327,12 @@ export default function BattleshipsMatch({ config }: { config: MatchConfig }) {
 
   const targetPlayer = isComputer ? computerSide : otherPlayer(turn);
   const activePlayer = isComputer ? humanSide : turn;
-  const myShipsLeft = shipsRemaining(grids[activePlayer], fleets[activePlayer]);
-  const targetShipsLeft = shipsRemaining(grids[targetPlayer], fleets[targetPlayer]);
+  const activeGrid = grids[activePlayer] ?? emptyGrid();
+  const activeFleet = fleets[activePlayer] ?? [];
+  const targetGrid = grids[targetPlayer] ?? emptyGrid();
+  const targetFleet = fleets[targetPlayer] ?? [];
+  const myShipsLeft = shipsRemaining(activeGrid, activeFleet);
+  const targetShipsLeft = shipsRemaining(targetGrid, targetFleet);
   const targetLabel = isComputer ? 'Enemy waters' : `Player ${targetPlayer + 1} waters`;
 
   return (

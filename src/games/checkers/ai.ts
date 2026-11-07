@@ -14,7 +14,7 @@ export function evaluate(state: CheckersState, player: Player): number {
   let score = 0;
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      const occ: Occupant = state.board[r][c];
+      const occ: Occupant | null = state.board[r]?.[c] ?? null;
       if (occ === null) continue;
       const base = occ.type === 'king' ? KING_VALUE : MAN_VALUE;
       const positional = occ.type === 'man' ? (occ.player === 0 ? (SIZE - 1 - r) * 2 : r * 2) : 0;

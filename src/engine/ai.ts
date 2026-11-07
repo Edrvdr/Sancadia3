@@ -86,7 +86,12 @@ function bestMovesAtDepth<State, Move>(
 }
 
 function pickRandom<Move>(moves: Move[]): Move {
-  return moves[Math.floor(Math.random() * moves.length)];
+  const index = Math.floor(Math.random() * moves.length);
+  const move = moves[index];
+  if (move === undefined) {
+    throw new Error('Cannot pick a move from an empty list.');
+  }
+  return move;
 }
 
 export function getBestMove<State, Move>(
@@ -103,7 +108,10 @@ export function getBestMove<State, Move>(
   }
 
   const context = { evaluate: options.evaluate, deadline: Date.now() + options.timeLimitMs };
-  let best: Move[] = [moves[0]];
+  const firstMove = moves[0];
+  if (firstMove === undefined) return null;
+
+  let best: Move[] = [firstMove];
   for (let depth = 1; depth <= options.maxDepth; depth++) {
     try {
       best = bestMovesAtDepth(engine, state, moves, depth, context);

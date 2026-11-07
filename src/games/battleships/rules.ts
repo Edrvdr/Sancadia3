@@ -31,7 +31,7 @@ export function canPlace(
     const r = horizontal ? row : row + i;
     const c = horizontal ? col + i : col;
     if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return false;
-    if (grid[r][c] === 'ship') return false;
+    if (grid[r]?.[c] === 'ship') return false;
   }
   return true;
 }
@@ -50,7 +50,10 @@ export function placeShip(
   for (let i = 0; i < size; i++) {
     const r = horizontal ? row : row + i;
     const c = horizontal ? col + i : col;
-    next[r][c] = 'ship';
+    const rowCells = next[r];
+    if (rowCells) {
+      rowCells[c] = 'ship';
+    }
   }
   return next;
 }
@@ -70,7 +73,12 @@ export function randomPlacement(): { grid: CellState[][]; ships: ShipPlacement[]
       const col = Math.floor(Math.random() * (maxCol + 1));
       if (canPlace(grid, row, col, size, horizontal)) {
         const next = placeShip(grid, row, col, size, horizontal);
-        for (let r = 0; r < SIZE; r++) grid[r] = next[r];
+        for (let r = 0; r < SIZE; r++) {
+          const nextRow = next[r];
+          if (nextRow) {
+            grid[r] = nextRow;
+          }
+        }
         ships.push({ row, col, size, horizontal });
         placed = true;
       }
@@ -94,19 +102,23 @@ export function shoot(grid: Grid, ships: ShipPlacement[], row: number, col: numb
     throw new Error(`Shot is outside the board: ${row},${col}`);
   }
   const next = grid.map((r) => [...r]);
-  const cell = next[row][col];
+  const cell = next[row]?.[col] ?? 'empty';
   if (cell === 'hit' || cell === 'miss') {
     return { grid: next, result: { hit: false, sunk: false, shipIndex: null } };
   }
   if (cell === 'ship') {
-    next[row][col] = 'hit';
+    const rowCells = next[row];
+    if (rowCells) {
+      rowCells[col] = 'hit';
+    }
     for (let i = 0; i < ships.length; i++) {
       const ship = ships[i];
+      if (!ship) continue;
       let allHit = true;
       for (let s = 0; s < ship.size; s++) {
         const r = ship.horizontal ? ship.row : ship.row + s;
         const c = ship.horizontal ? ship.col + s : ship.col;
-        if (next[r][c] !== 'hit') {
+        if (next[r]?.[c] !== 'hit') {
           allHit = false;
           break;
         }
@@ -117,14 +129,17 @@ export function shoot(grid: Grid, ships: ShipPlacement[], row: number, col: numb
     }
     return { grid: next, result: { hit: true, sunk: false, shipIndex: null } };
   }
-  next[row][col] = 'miss';
+  const rowCells = next[row];
+  if (rowCells) {
+    rowCells[col] = 'miss';
+  }
   return { grid: next, result: { hit: false, sunk: false, shipIndex: null } };
 }
 
 export function allShipsSunk(grid: Grid): boolean {
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      if (grid[r][c] === 'ship') return false;
+      if (grid[r]?.[c] === 'ship') return false;
     }
   }
   return true;
@@ -137,7 +152,7 @@ export function shipsRemaining(grid: Grid, ships: ShipPlacement[]): number {
     for (let s = 0; s < ship.size; s++) {
       const r = ship.horizontal ? ship.row : ship.row + s;
       const c = ship.horizontal ? ship.col + s : ship.col;
-      if (grid[r][c] === 'ship') {
+      if (grid[r]?.[c] === 'ship') {
         intact = true;
         break;
       }

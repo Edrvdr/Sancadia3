@@ -77,12 +77,12 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
         onCellEnter={(_row, col) => setHoverCol(col)}
         onBoardLeave={() => setHoverCol(null)}
         getCellLabel={(displayRow, col) => {
-          const cell = state.board[ROWS - 1 - displayRow][col];
+          const cell = state.board[ROWS - 1 - displayRow]?.[col] ?? null;
           return `Row ${displayRow + 1}, column ${col + 1}, ${cell === null ? 'empty' : cell === 0 ? 'player one disc' : 'player two disc'}`;
         }}
         renderCell={(displayRow, col) => {
           const boardRow = ROWS - 1 - displayRow;
-          const cell = state.board[boardRow][col];
+          const cell = state.board[boardRow]?.[col] ?? null;
           const won = isWinCell(boardRow, col);
           const columnLit = hoverCol === col && legal.includes(col) && !inputLocked;
           const preview = previewRow === boardRow && hoverCol === col && cell === null;

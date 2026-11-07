@@ -6,18 +6,23 @@ function luminance(hex: string): number {
   const linear = channels.map((channel) =>
     channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
   );
-  return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  const red = linear[0] ?? 0;
+  const green = linear[1] ?? 0;
+  const blue = linear[2] ?? 0;
+  return red * 0.2126 + green * 0.7152 + blue * 0.0722;
 }
 
 function contrast(foreground: string, background: string): number {
-  const [lighter, darker] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  const lighter = values[0] ?? 0;
+  const darker = values[1] ?? 0;
   return (lighter + 0.05) / (darker + 0.05);
 }
 
 describe('theme contrast', () => {
   it.each(themes)('$name provides readable text and controls', (theme) => {
     const { tokens } = theme;
-    const pairs = [
+    const pairs: Array<[string, string]> = [
       [tokens.foreground, tokens.background],
       [tokens.subtle, tokens.background],
       [tokens.primary, tokens.background],

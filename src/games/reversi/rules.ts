@@ -34,12 +34,12 @@ function flipsFor(board: Board, row: number, col: number, player: Player): Rever
     const line: ReversiMove[] = [];
     let r = row + dr;
     let c = col + dc;
-    while (inBounds(r, c) && board[r][c] === opponent) {
+    while (inBounds(r, c) && board[r]?.[c] === opponent) {
       line.push([r, c]);
       r += dr;
       c += dc;
     }
-    if (line.length > 0 && inBounds(r, c) && board[r][c] === player) {
+    if (line.length > 0 && inBounds(r, c) && board[r]?.[c] === player) {
       flipped.push(...line);
     }
   }
@@ -48,7 +48,7 @@ function flipsFor(board: Board, row: number, col: number, player: Player): Rever
 
 export function flipsForMove(board: Board, move: ReversiMove, player: Player): ReversiMove[] {
   const [row, col] = move;
-  if (!inBounds(row, col) || board[row][col] !== null) return [];
+  if (!inBounds(row, col) || board[row]?.[col] !== null) return [];
   return flipsFor(board, row, col, player);
 }
 
@@ -56,7 +56,7 @@ export function legalMovesFor(state: ReversiState): ReversiMove[] {
   const moves: ReversiMove[] = [];
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      if (state.board[r][c] !== null) continue;
+      if (state.board[r]?.[c] !== null) continue;
       if (flipsFor(state.board, r, c, state.turn).length > 0) {
         moves.push([r, c]);
       }
@@ -70,8 +70,9 @@ function countDiscs(board: Board): [number, number] {
   let p1 = 0;
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      if (board[r][c] === 0) p0++;
-      else if (board[r][c] === 1) p1++;
+      const cell = board[r]?.[c] ?? null;
+      if (cell === 0) p0++;
+      else if (cell === 1) p1++;
     }
   }
   return [p0, p1];
@@ -85,8 +86,15 @@ function applyMoveInternal(state: ReversiState, move: ReversiMove): ReversiState
   const [row, col] = move;
   const flipped = flipsFor(state.board, row, col, state.turn);
   const board = state.board.map((cells) => [...cells]);
-  board[row][col] = state.turn;
-  for (const [r, c] of flipped) board[r][c] = state.turn;
+  const targetRow = board[row];
+  if (!targetRow) {
+    throw new Error(`Invalid move row: ${row}`);
+  }
+  targetRow[col] = state.turn;
+  for (const [r, c] of flipped) {
+    const rowCells = board[r];
+    if (rowCells) rowCells[c] = state.turn;
+  }
   return { board, turn: otherPlayer(state.turn), passed: false };
 }
 
@@ -95,10 +103,16 @@ export const reversi: GameEngine<ReversiState, ReversiMove> = {
   initialState: () => {
     const board: Cell[][] = Array.from({ length: SIZE }, () => Array<Cell>(SIZE).fill(null));
     const mid = SIZE / 2;
-    board[mid - 1][mid - 1] = 0;
-    board[mid][mid] = 0;
-    board[mid - 1][mid] = 1;
-    board[mid][mid - 1] = 1;
+    const midRowAbove = board[mid - 1];
+    const midRow = board[mid];
+    if (midRowAbove) {
+      midRowAbove[mid - 1] = 0;
+      midRowAbove[mid] = 1;
+    }
+    if (midRow) {
+      midRow[mid] = 0;
+      midRow[mid - 1] = 1;
+    }
     return { board, turn: 0, passed: false };
   },
   currentPlayer: (state) => state.turn,

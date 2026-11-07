@@ -56,7 +56,7 @@ export default function ReversiMatch({ config }: { config: MatchConfig }) {
         disabled={computerTurn || over}
         onCellTap={(row, col) => match.playMove([row, col] as ReversiMove)}
         renderCell={(row, col) => {
-          const cell = state.board[row][col];
+          const cell = state.board[row]?.[col] ?? null;
           const canPlay = isLegal(row, col) && !computerTurn && !over;
           return (
             <>

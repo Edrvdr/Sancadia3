@@ -13,17 +13,31 @@ interface TreeState {
 }
 
 function makeTreeEngine(tree: Record<string, TreeNode>): GameEngine<TreeState, string> {
+  const getNode = (stateId: string): TreeNode => {
+    const node = tree[stateId];
+    if (!node) {
+      throw new Error(`Unknown node: ${stateId}`);
+    }
+    return node;
+  };
+
   return {
     id: 'tree',
     initialState: () => ({ id: 'root', player: 0 }),
     currentPlayer: (state) => state.player,
-    legalMoves: (state) => Object.keys(tree[state.id].children),
-    applyMove: (state, move) => ({
-      id: tree[state.id].children[move],
-      player: state.player === 0 ? 1 : 0,
-    }),
-    isTerminal: (state) => tree[state.id].winner !== undefined,
-    winner: (state) => tree[state.id].winner ?? null,
+    legalMoves: (state) => Object.keys(getNode(state.id).children),
+    applyMove: (state, move) => {
+      const nextId = getNode(state.id).children[move];
+      if (nextId === undefined) {
+        throw new Error(`Unknown child for move "${move}" in state ${state.id}`);
+      }
+      return {
+        id: nextId,
+        player: state.player === 0 ? 1 : 0,
+      };
+    },
+    isTerminal: (state) => getNode(state.id).winner !== undefined,
+    winner: (state) => getNode(state.id).winner ?? null,
   };
 }
 
@@ -207,14 +221,27 @@ describe('getBestMove options', () => {
       won: { children: {}, winner: 0 },
     };
     const base = makeTreeEngine(tree);
+    const getNode = (stateId: string): TreeNode => {
+      const node = tree[stateId];
+      if (!node) {
+        throw new Error(`Unknown state: ${stateId}`);
+      }
+      return node;
+    };
     const engine: GameEngine<TreeState, string> = {
       ...base,
-      legalMoves: (state) => (state.id === 'blocked' ? [] : Object.keys(tree[state.id].children)),
+      legalMoves: (state) => (state.id === 'blocked' ? [] : Object.keys(getNode(state.id).children)),
       passTurn: (state) => ({ id: 'ready', player: state.player === 0 ? 1 : 0 }),
-      applyMove: (state, move) => ({
-        id: tree[state.id].children[move],
-        player: state.player === 0 ? 1 : 0,
-      }),
+      applyMove: (state, move) => {
+        const nextId = getNode(state.id).children[move];
+        if (nextId === undefined) {
+          throw new Error(`Unknown child for move "${move}" in state ${state.id}`);
+        }
+        return {
+          id: nextId,
+          player: state.player === 0 ? 1 : 0,
+        };
+      },
     };
     vi.spyOn(Math, 'random').mockReturnValue(0);
     expect(getBestMove(engine, engine.initialState(), { maxDepth: 3 })).toBe('advance');

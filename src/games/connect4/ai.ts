@@ -21,8 +21,8 @@ const CENTRE_BONUS = 3;
 
 function windowScore(own: number, opponent: number): number {
   if (own > 0 && opponent > 0) return 0;
-  if (own > 0) return OWN_WINDOW_SCORE[own];
-  return OPPONENT_WINDOW_SCORE[opponent];
+  if (own > 0) return OWN_WINDOW_SCORE[own] ?? 0;
+  return OPPONENT_WINDOW_SCORE[opponent] ?? 0;
 }
 
 export function evaluate(state: Connect4State, player: Player): number {
@@ -40,7 +40,7 @@ export function evaluate(state: Connect4State, player: Player): number {
         let own = 0;
         let opp = 0;
         for (let step = 0; step < 4; step++) {
-          const cell: Cell = board[row + dRow * step][col + dCol * step];
+          const cell: Cell = board[row + dRow * step]?.[col + dCol * step] ?? null;
           if (cell === player) own++;
           else if (cell === opponent) opp++;
         }
@@ -48,7 +48,7 @@ export function evaluate(state: Connect4State, player: Player): number {
       }
     }
 
-    const centre = board[row][CENTRE_COL];
+    const centre = board[row]?.[CENTRE_COL] ?? null;
     if (centre === player) score += CENTRE_BONUS;
     else if (centre === opponent) score -= CENTRE_BONUS;
   }

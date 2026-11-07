@@ -6,7 +6,8 @@ import { ticTacToe } from '@/games/tictactoe/rules';
 type Result = 'expert-win' | 'expert-loss' | 'draw';
 
 function randomMove(moves: number[]): number {
-  return moves[Math.floor(Math.random() * moves.length)];
+  const index = Math.floor(Math.random() * moves.length);
+  return moves[index] ?? -1;
 }
 
 function playGame(expertSide: Player): Result {
@@ -14,7 +15,7 @@ function playGame(expertSide: Player): Result {
   while (!ticTacToe.isTerminal(state)) {
     const moves = ticTacToe.legalMoves(state);
     const move = state.turn === expertSide ? chooseMove(state, 'expert') : randomMove(moves);
-    if (move === null) throw new Error('No move available before the game ended');
+    if (move === null || move < 0) throw new Error('No move available before the game ended');
     state = ticTacToe.applyMove(state, move);
   }
   const result = ticTacToe.winner(state);

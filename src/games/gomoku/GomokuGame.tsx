@@ -24,7 +24,7 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
     let move: GomokuMove | null = null;
     for (let row = 0; row < SIZE && move === null; row++) {
       for (let col = 0; col < SIZE; col++) {
-        if (previousBoard.current[row][col] === null && state.board[row][col] !== null) {
+        if ((previousBoard.current[row]?.[col] ?? null) === null && (state.board[row]?.[col] ?? null) !== null) {
           move = { row, col };
           break;
         }
@@ -46,7 +46,7 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
   };
 
   const selectCell = (row: number, col: number) => {
-    if (computerTurn || over || state.board[row][col] !== null) return;
+    if (computerTurn || over || (state.board[row]?.[col] ?? null) !== null) return;
     if (preview?.row === row && preview.col === col) {
       match.playMove({ row, col });
       setLastMove({ row, col });
@@ -76,14 +76,14 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
         disabled={computerTurn || over}
         onCellTap={selectCell}
         getCellLabel={(row, col) => {
-          const owner = state.board[row][col];
+          const owner = state.board[row]?.[col] ?? null;
           const piece = owner === null ? 'Empty' : owner === 0 ? 'Black stone' : 'White stone';
           return `${piece}, row ${row + 1}, column ${col + 1}`;
         }}
         gridClassName="gap-0.5 rounded-xl p-1"
         cellClassName="min-h-0 rounded-sm"
         renderCell={(row, col) => {
-          const cell = state.board[row][col];
+          const cell = state.board[row]?.[col] ?? null;
           const isPreview = preview?.row === row && preview.col === col;
           const isLastMove = lastMove?.row === row && lastMove.col === col;
           const isWinning = isWinningCell(row, col);
