@@ -16,7 +16,7 @@ const MARKS = ['O', 'X'] as const;
 export default function TicTacToeMatch({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: ticTacToe, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
 
   const winLine = findWin(state.board)?.line ?? null;
   const summary = result === null ? null : describeResult(result, config, humanSide);
@@ -36,6 +36,10 @@ export default function TicTacToeMatch({ config }: { config: MatchConfig }) {
         cols={3}
         disabled={computerTurn || over}
         onCellTap={(row, col) => match.playMove(row * 3 + col)}
+        getCellLabel={(row, col) => {
+          const cell = state.board[row * 3 + col];
+          return `Row ${row + 1}, column ${col + 1}, ${cell === null ? 'empty' : cell === 0 ? 'X' : 'O'}`;
+        }}
         renderCell={(row, col) => {
           const index = row * 3 + col;
           const cell = state.board[index];
@@ -64,6 +68,7 @@ export default function TicTacToeMatch({ config }: { config: MatchConfig }) {
           outcome={summary.outcome}
           headline={summary.headline}
           message={summary.message}
+          pointsEarned={config.mode === 'computer' ? pointsEarned : undefined}
           onPlayAgain={match.restart}
           onBackToMenu={() => navigate('/games')}
           onClose={match.closeDialog}

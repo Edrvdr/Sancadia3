@@ -4,7 +4,9 @@ import DifficultyPicker from '@/components/settings/DifficultyPicker';
 import ResetDataCard from '@/components/settings/ResetDataCard';
 import ThemePicker from '@/components/settings/ThemePicker';
 import ToggleRow from '@/components/settings/ToggleRow';
+import InstallAppButton from '@/components/settings/InstallAppButton';
 import { useSettings } from '@/hooks/useSettings';
+import { supportsVibration } from '@/hooks/useFeedback';
 
 export default function SettingsScreen() {
   const { settings, updateSettings } = useSettings();
@@ -31,15 +33,36 @@ export default function SettingsScreen() {
               checked={settings.soundEnabled}
               onChange={(soundEnabled) => updateSettings({ soundEnabled })}
             />
-            <ToggleRow
-              label="Vibration"
-              description="Feel a buzz on taps and wins"
-              checked={settings.vibrationEnabled}
-              onChange={(vibrationEnabled) => updateSettings({ vibrationEnabled })}
-            />
+            {supportsVibration() ? (
+              <ToggleRow
+                label="Vibration"
+                description="Feel a buzz on taps and wins"
+                checked={settings.vibrationEnabled}
+                onChange={(vibrationEnabled) => updateSettings({ vibrationEnabled })}
+              />
+            ) : (
+              <p className="text-sm text-subtle">Vibration is not supported by this browser.</p>
+            )}
+            <label className="grid gap-2 text-sm font-medium">
+              <span className="flex justify-between">
+                <span>Master volume</span>
+                <span aria-live="polite">{Math.round(settings.volume * 100)}%</span>
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={settings.volume}
+                aria-label="Master volume"
+                onChange={(event) => updateSettings({ volume: Number(event.currentTarget.value) })}
+                className="w-full accent-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
+              />
+            </label>
           </div>
         </Card>
 
+        <InstallAppButton />
         <ResetDataCard />
       </div>
     </>

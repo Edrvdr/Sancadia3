@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
 import TopNav from '@/components/TopNav';
+import PwaNotifications from '@/components/PwaNotifications';
 
 export default function AppLayout() {
   const location = useLocation();
@@ -15,6 +16,7 @@ export default function AppLayout() {
         <BottomNav />
       </div>
       <div className="h-[max(0.5rem,env(safe-area-inset-bottom))] bg-background" />
+      <PwaNotifications />
     </div>
   );
 }

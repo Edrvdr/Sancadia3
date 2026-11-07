@@ -24,7 +24,7 @@ function samePos(a: readonly [number, number], r: number, c: number): boolean {
 export default function CheckersMatch({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: checkers, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
   const [selected, setSelected] = useState<[number, number] | null>(null);
 
   const allLegal = legalMovesFor(state);
@@ -129,6 +129,7 @@ export default function CheckersMatch({ config }: { config: MatchConfig }) {
           outcome={summary.outcome}
           headline={summary.headline}
           message={summary.message}
+          pointsEarned={config.mode === 'computer' ? pointsEarned : undefined}
           onPlayAgain={() => { match.restart(); setSelected(null); }}
           onBackToMenu={() => navigate('/games')}
           onClose={match.closeDialog}

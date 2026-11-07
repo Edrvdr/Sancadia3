@@ -20,7 +20,7 @@ function eqMove(a: ReversiMove, r: number, c: number): boolean {
 export default function ReversiMatch({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: reversi, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
 
   const legal = legalMovesFor(state);
   const isLegal = (r: number, c: number) => legal.some((m) => eqMove(m, r, c));
@@ -86,6 +86,7 @@ export default function ReversiMatch({ config }: { config: MatchConfig }) {
           outcome={summary.outcome}
           headline={summary.headline}
           message={summary.message}
+          pointsEarned={config.mode === 'computer' ? pointsEarned : undefined}
           onPlayAgain={match.restart}
           onBackToMenu={() => navigate('/games')}
           onClose={match.closeDialog}

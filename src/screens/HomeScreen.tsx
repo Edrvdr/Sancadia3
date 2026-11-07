@@ -1,4 +1,4 @@
-import { Gamepad2, LogIn, Play, Settings } from 'lucide-react';
+import { Gamepad2, LogIn, Play, Settings, Trophy } from 'lucide-react';
 import ButtonLink from '@/components/ButtonLink';
 
 export default function HomeScreen() {
@@ -19,6 +19,10 @@ export default function HomeScreen() {
         <ButtonLink to="/settings" variant="secondary">
           <Settings className="h-5 w-5" aria-hidden="true" />
           Settings
+        </ButtonLink>
+        <ButtonLink to="/stats" variant="secondary">
+          <Trophy className="h-5 w-5" aria-hidden="true" />
+          Stats and points
         </ButtonLink>
         <ButtonLink to="/login" variant="secondary">
           <LogIn className="h-5 w-5" aria-hidden="true" />

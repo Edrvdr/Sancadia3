@@ -15,7 +15,7 @@ import { useEngineMatch } from '@/games/useEngineMatch';
 export default function GomokuGame({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: gomoku, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
   const [preview, setPreview] = useState<GomokuMove | null>(null);
   const [lastMove, setLastMove] = useState<GomokuMove | null>(null);
   const previousBoard = useRef(state.board);
@@ -95,7 +95,11 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
                     isLastMove ? 'ring-2 ring-foreground' : ''
                   } ${isWinning ? 'ring-2 ring-danger' : ''}`}
                   aria-label={cell === 0 ? 'Black stone' : 'White stone'}
-                />
+                >
+                  <span aria-hidden="true" className={`flex h-full w-full items-center justify-center text-[0.55rem] font-black ${cell === 0 ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    {cell === 0 ? 'X' : 'O'}
+                  </span>
+                </span>
               )}
               {isPreview && cell === null && (
                 <span className="relative h-[70%] w-[70%] rounded-full bg-primary/40 ring-2 ring-primary" aria-hidden="true" />
@@ -116,6 +120,7 @@ export default function GomokuGame({ config }: { config: MatchConfig }) {
           outcome={summary.outcome}
           headline={summary.headline}
           message={summary.message}
+          pointsEarned={config.mode === 'computer' ? pointsEarned : undefined}
           onPlayAgain={restart}
           onBackToMenu={() => navigate('/games')}
           onClose={match.closeDialog}

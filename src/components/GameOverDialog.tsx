@@ -10,6 +10,7 @@ interface GameOverDialogProps {
   outcome: GameOutcome;
   headline: string;
   message: string;
+  pointsEarned?: number;
   onPlayAgain: () => void;
   onBackToMenu: () => void;
   onClose: () => void;
@@ -28,6 +29,7 @@ export default function GameOverDialog({
   outcome,
   headline,
   message,
+  pointsEarned,
   onPlayAgain,
   onBackToMenu,
   onClose,
@@ -46,6 +48,9 @@ export default function GameOverDialog({
         </span>
       }
     >
+      {pointsEarned !== undefined && (
+        <p className="mb-4 text-center text-lg font-bold text-primary">+{pointsEarned} points</p>
+      )}
       <div className="grid gap-3">
         <Button onClick={onPlayAgain}>Play again</Button>
         <Button variant="secondary" onClick={onBackToMenu}>

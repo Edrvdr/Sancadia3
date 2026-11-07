@@ -17,7 +17,7 @@ const discTone = ['bg-primary', 'bg-accent'] as const;
 export default function Connect4Match({ config }: { config: MatchConfig }) {
   const navigate = useNavigate();
   const match = useEngineMatch({ engine: connect4, config, chooseMove });
-  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen } = match;
+  const { state, result, over, turn, humanSide, computerTurn, scores, dialogOpen, pointsEarned } = match;
   const [hoverCol, setHoverCol] = useState<number | null>(null);
 
   const inputLocked = computerTurn || over;
@@ -76,6 +76,10 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
         onCellTap={(_row, col) => selectColumn(col)}
         onCellEnter={(_row, col) => setHoverCol(col)}
         onBoardLeave={() => setHoverCol(null)}
+        getCellLabel={(displayRow, col) => {
+          const cell = state.board[ROWS - 1 - displayRow][col];
+          return `Row ${displayRow + 1}, column ${col + 1}, ${cell === null ? 'empty' : cell === 0 ? 'player one disc' : 'player two disc'}`;
+        }}
         renderCell={(displayRow, col) => {
           const boardRow = ROWS - 1 - displayRow;
           const cell = state.board[boardRow][col];
@@ -91,7 +95,12 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
                     won ? 'ring-4 ring-foreground' : ''
                   }`}
                   style={{ '--drop-from': `-${(displayRow + 1.5) * 125}%` } as CSSProperties}
-                />
+                >
+                  <span className="sr-only">{cell === 0 ? '1' : '2'}</span>
+                  <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-sm font-black text-white/90">
+                    {cell === 0 ? '1' : '2'}
+                  </span>
+                </span>
               )}
               {preview && (
                 <span className="relative h-[80%] w-[80%] rounded-full bg-primary/25" aria-hidden="true" />
@@ -112,6 +121,7 @@ export default function Connect4Match({ config }: { config: MatchConfig }) {
           outcome={summary.outcome}
           headline={summary.headline}
           message={summary.message}
+          pointsEarned={config.mode === 'computer' ? pointsEarned : undefined}
           onPlayAgain={match.restart}
           onBackToMenu={() => navigate('/games')}
           onClose={match.closeDialog}
