@@ -32,6 +32,8 @@ arcade and local game features work without those optional values.
 
 ## Project status
 
+> Roadmap status last updated November 7, 2026 at 4:26 a.m. UTC.
+
 ### What has been done
 
 - Set up the Vite + React + TypeScript arcade structure.
