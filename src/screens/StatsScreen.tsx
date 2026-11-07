@@ -21,7 +21,10 @@ export default function StatsScreen() {
     (total, game) =>
       total +
       game.twoPlayerPlayed +
-      difficulties.reduce((sum, level) => sum + game.computer[level].played, 0),
+      difficulties.reduce(
+        (sum, level) => sum + game.computer[level].played + game.puzzle[level].played,
+        0,
+      ),
     0,
   );
 
@@ -60,6 +63,10 @@ export default function StatsScreen() {
                 ...difficulties.map((level) => computer?.[level].bestWinStreak ?? 0),
               );
               const twoPlayerPlayed = record?.twoPlayerPlayed ?? 0;
+              const puzzlePlayed = difficulties.reduce(
+                (total, level) => total + (record?.puzzle[level].played ?? 0),
+                0,
+              );
               return (
                 <Card key={game.id} className="grid gap-3">
                   <div className="flex items-center justify-between gap-3">
@@ -71,6 +78,31 @@ export default function StatsScreen() {
                   <p className="text-sm text-subtle">
                     Computer win rate: {percentage(wins, played)} · Best streak: {bestStreak}
                   </p>
+                  {puzzlePlayed > 0 && (
+                    <div className="grid gap-2 border-t border-border pt-3">
+                      <h4 className="text-sm font-bold">Puzzle results</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {difficulties.map((level) => {
+                          const row = record?.puzzle[level];
+                          const averageAttempts =
+                            row && row.solved > 0
+                              ? (row.totalWinningAttempts / row.solved).toFixed(1)
+                              : '—';
+                          return (
+                            <div key={level} className="rounded-xl bg-background p-2 text-center">
+                              <p className="text-xs font-semibold">{labels[level]}</p>
+                              <p className="mt-1 text-sm">
+                                {row?.solved ?? 0} solved · {row?.failed ?? 0} failed
+                              </p>
+                              <p className="text-xs text-subtle">
+                                Best: {row?.bestAttempts ?? '—'} · Avg: {averageAttempts}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                   <div className="grid grid-cols-3 gap-2 border-t border-border pt-3">
                     {difficulties.map((level) => {
                       const row = computer?.[level];

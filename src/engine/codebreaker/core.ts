@@ -7,19 +7,40 @@ import type {
   ScoreFeedback,
 } from '@/engine/codebreaker/types';
 
+function validateConfig(config: CodebreakerConfig): void {
+  if (
+    !Number.isInteger(config.symbols) ||
+    config.symbols < 1 ||
+    !Number.isInteger(config.length) ||
+    config.length < 1 ||
+    !Number.isInteger(config.maxAttempts) ||
+    config.maxAttempts < 1
+  ) {
+    throw new RangeError('Codebreaker config values must be positive integers.');
+  }
+  if (!config.allowRepeats && config.length > config.symbols) {
+    throw new RangeError('Code length cannot exceed the number of unique symbols.');
+  }
+}
+
+function randomIndex(rng: Rng, length: number): number {
+  const sample = rng();
+  if (!Number.isFinite(sample) || sample < 0 || sample >= 1) {
+    throw new RangeError('RNG must return a finite number in the range [0, 1).');
+  }
+  return Math.floor(sample * length);
+}
+
 export function generateSecret(
   config: CodebreakerConfig,
   rng: Rng = Math.random,
 ): CodebreakerGuess {
+  validateConfig(config);
   const secret: number[] = [];
-
-  if (config.length <= 0 || config.symbols <= 0) {
-    return secret;
-  }
 
   if (config.allowRepeats) {
     for (let index = 0; index < config.length; index += 1) {
-      const value = Math.min(Math.floor(rng() * config.symbols), config.symbols - 1);
+      const value = randomIndex(rng, config.symbols);
       secret.push(value);
     }
     return secret;
@@ -29,7 +50,7 @@ export function generateSecret(
   const limit = Math.min(config.length, values.length);
 
   for (let index = 0; index < limit; index += 1) {
-    const position = Math.min(Math.floor(rng() * values.length), values.length - 1);
+    const position = randomIndex(rng, values.length);
     const value = values.splice(position, 1)[0];
     if (value === undefined) {
       break;
@@ -96,6 +117,7 @@ export function consistentCandidates(
   config: CodebreakerConfig,
   history: HistoryEntry[],
 ): CodebreakerGuess[] {
+  validateConfig(config);
   const candidates: CodebreakerGuess[] = [];
   const values = Array.from({ length: config.symbols }, (_, index) => index);
 

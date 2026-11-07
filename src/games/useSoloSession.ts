@@ -25,11 +25,13 @@ export function useSoloSession() {
     setAttempts((value) => value + 1);
   }, []);
 
-  const recordResult = useCallback((nextStatus: SoloStatus) => {
-    if (recordedRef.current) return;
+  const recordResult = useCallback((nextStatus: SoloStatus, onRecord?: () => void) => {
+    if (recordedRef.current) return false;
     recordedRef.current = true;
     setRecorded(true);
     setStatus(nextStatus);
+    onRecord?.();
+    return true;
   }, []);
 
   return { attempts, status, recorded, restart, markAttempt, recordResult };

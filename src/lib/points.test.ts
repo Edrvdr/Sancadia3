@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculatePoints } from '@/lib/points';
+import { calculatePoints, calculatePuzzlePoints } from '@/lib/points';
 
 describe('calculatePoints', () => {
   it('awards difficulty-based win points', () => {
@@ -16,5 +16,35 @@ describe('calculatePoints', () => {
   it('awards fixed points for draws and losses', () => {
     expect(calculatePoints('draw', 'expert', 8)).toBe(5);
     expect(calculatePoints('lose', 'expert', 8)).toBe(1);
+  });
+
+  it('breaks down puzzle points and applies hint costs without zero-point wins', () => {
+    expect(
+      calculatePuzzlePoints({
+        outcome: 'win',
+        difficulty: 'beginner',
+        attempts: 1,
+        maxAttempts: 10,
+        hintsUsed: 1,
+        winStreak: 1,
+      }),
+    ).toEqual({ base: 10, efficiency: 10, streak: 5, hintCost: 5, total: 20 });
+    expect(
+      calculatePuzzlePoints({
+        outcome: 'win',
+        difficulty: 'beginner',
+        attempts: 10,
+        maxAttempts: 10,
+        hintsUsed: 5,
+      }).total,
+    ).toBe(1);
+    expect(
+      calculatePuzzlePoints({
+        outcome: 'lose',
+        difficulty: 'expert',
+        attempts: 5,
+        maxAttempts: 5,
+      }).total,
+    ).toBe(1);
   });
 });

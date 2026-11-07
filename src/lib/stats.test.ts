@@ -67,14 +67,103 @@ describe('stats', () => {
     ).toEqual(emptyStats());
     expect(
       parseStats({
-        version: 1,
+        version: 2,
         totalPoints: 12,
         games: { game: { computer: { beginner: { wins: 2 } } } },
       }),
     ).toMatchObject({
-      version: 1,
+      version: 2,
       totalPoints: 12,
       games: { game: { computer: { beginner: { wins: 2, played: 0 } }, twoPlayerPlayed: 0 } },
+    });
+  });
+
+  it('migrates version 1 stats without losing game records or points', () => {
+    const migrated = parseStats({
+      version: 1,
+      totalPoints: 75,
+      games: {
+        'connect-4': {
+          computer: {
+            beginner: {
+              played: 4,
+              wins: 3,
+              losses: 1,
+              draws: 0,
+              currentWinStreak: 2,
+              bestWinStreak: 3,
+            },
+          },
+          twoPlayerPlayed: 2,
+        },
+      },
+      appliedResultIds: ['old-result'],
+    });
+
+    expect(migrated).toMatchObject({
+      version: 2,
+      totalPoints: 75,
+      games: {
+        'connect-4': {
+          computer: { beginner: { played: 4, wins: 3, losses: 1, bestWinStreak: 3 } },
+          puzzle: {
+            beginner: {
+              played: 0,
+              solved: 0,
+              failed: 0,
+              bestAttempts: null,
+              totalWinningAttempts: 0,
+            },
+          },
+          twoPlayerPlayed: 2,
+        },
+      },
+      appliedResultIds: ['old-result'],
+    });
+  });
+
+  it('records puzzle attempts, hints, best and average solved attempts once', () => {
+    const first = recordGameResult(emptyStats(), {
+      resultId: 'puzzle-1',
+      gameId: 'mastermind',
+      mode: 'puzzle',
+      difficulty: 'beginner',
+      outcome: 'win',
+      attempts: 2,
+      maxAttempts: 10,
+      hintsUsed: 1,
+    });
+    const duplicate = recordGameResult(first.stats, {
+      resultId: 'puzzle-1',
+      gameId: 'mastermind',
+      mode: 'puzzle',
+      difficulty: 'beginner',
+      outcome: 'win',
+      attempts: 2,
+      maxAttempts: 10,
+      hintsUsed: 1,
+    });
+    const next = recordGameResult(first.stats, {
+      resultId: 'puzzle-2',
+      gameId: 'mastermind',
+      mode: 'puzzle',
+      difficulty: 'beginner',
+      outcome: 'win',
+      attempts: 4,
+      maxAttempts: 10,
+    });
+
+    expect(first.pointsEarned).toBeGreaterThan(0);
+    expect(duplicate.stats).toBe(first.stats);
+    expect(duplicate.pointsEarned).toBe(0);
+    expect(next.stats.games.mastermind?.puzzle.beginner).toMatchObject({
+      played: 2,
+      solved: 2,
+      failed: 0,
+      bestAttempts: 2,
+      totalWinningAttempts: 6,
+      currentWinStreak: 2,
+      bestWinStreak: 2,
     });
   });
 });

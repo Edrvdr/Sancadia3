@@ -33,7 +33,22 @@ describe('codebreaker core', () => {
   it('tracks game status and candidate filtering', () => {
     const history = [{ guess: [0, 1, 2, 3], feedback: { exact: 2, misplaced: 1 } }];
     expect(gameStatus(history, config)).toBe('playing');
-    expect(consistentCandidates(config, history).length).toBeGreaterThan(0);
+    const candidates = consistentCandidates(config, history);
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates).toContainEqual([0, 1, 3, 4]);
+    expect(candidates).not.toContainEqual([0, 1, 2, 3]);
+    expect(
+      gameStatus([{ guess: [0, 1, 2, 3], feedback: { exact: 4, misplaced: 0 } }], config),
+    ).toBe('won');
+    expect(
+      gameStatus(
+        Array.from({ length: config.maxAttempts }, () => ({
+          guess: [0, 1, 2, 3],
+          feedback: { exact: 0, misplaced: 0 },
+        })),
+        config,
+      ),
+    ).toBe('lost');
   });
 
   it('generates secrets with and without repeats', () => {
@@ -43,5 +58,12 @@ describe('codebreaker core', () => {
     expect(repeatAllowed).toHaveLength(4);
     expect(uniqueOnly).toHaveLength(4);
     expect(new Set(uniqueOnly).size).toBe(uniqueOnly.length);
+  });
+
+  it('rejects impossible configurations and invalid random samples', () => {
+    expect(() => generateSecret({ ...config, allowRepeats: false, symbols: 2, length: 4 })).toThrow(
+      'Code length cannot exceed the number of unique symbols.',
+    );
+    expect(() => generateSecret(config, () => 1)).toThrow('RNG must return a finite number');
   });
 });
