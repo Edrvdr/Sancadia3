@@ -1,12 +1,16 @@
 import type { ComponentType } from 'react';
-import TicTacToeGame from '@/games/tictactoe/TicTacToeGame';
+import BullsCowsGame from '@/games/bullscows/BullsCowsGame';
+import CheckersGame from '@/games/checkers/CheckersGame';
 import Connect4Game from '@/games/connect4/Connect4Game';
 import GomokuMatch from '@/games/gomoku/GomokuMatch';
+import HangmanGame from '@/games/hangman/HangmanGame';
+import MastermindGame from '@/games/mastermind/MastermindGame';
 import ReversiGame from '@/games/reversi/ReversiGame';
-import CheckersGame from '@/games/checkers/CheckersGame';
 import BattleshipsGame from '@/games/battleships/BattleshipsGame';
+import TicTacToeGame from '@/games/tictactoe/TicTacToeGame';
 
 export type GameStatus = 'available' | 'coming-soon';
+export type GameType = 'versus' | 'puzzle';
 
 export interface GameInfo {
   id: string;
@@ -16,6 +20,7 @@ export interface GameInfo {
   maxPlayers: number;
   icon: string;
   status: GameStatus;
+  type?: GameType;
 }
 
 export const games: GameInfo[] = [
@@ -72,6 +77,37 @@ export const games: GameInfo[] = [
     maxPlayers: 2,
     icon: '🚢',
     status: 'available',
+    type: 'versus',
+  },
+  {
+    id: 'mastermind',
+    name: 'Mastermind',
+    description: 'Decode the hidden code before your attempts run out.',
+    minPlayers: 1,
+    maxPlayers: 2,
+    icon: '🎯',
+    status: 'available',
+    type: 'puzzle',
+  },
+  {
+    id: 'bullscows',
+    name: 'Bulls and Cows',
+    description: 'Use bulls and cows to crack the right number pattern.',
+    minPlayers: 1,
+    maxPlayers: 2,
+    icon: '🐮',
+    status: 'available',
+    type: 'puzzle',
+  },
+  {
+    id: 'hangman',
+    name: 'Hangman',
+    description: 'Uncover the hidden word before the gallows fills in.',
+    minPlayers: 1,
+    maxPlayers: 1,
+    icon: '🪢',
+    status: 'available',
+    type: 'puzzle',
   },
 ];
 
@@ -82,4 +118,7 @@ export const gameComponents: Partial<Record<string, ComponentType>> = {
   reversi: ReversiGame,
   checkers: CheckersGame,
   battleships: BattleshipsGame,
+  mastermind: MastermindGame,
+  bullscows: BullsCowsGame,
+  hangman: HangmanGame,
 };

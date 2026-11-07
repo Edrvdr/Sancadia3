@@ -30,6 +30,29 @@ Useful scripts:
 Copy `.env.example` to `.env.local` and provide Supabase credentials to enable authentication. The
 arcade and local game features work without those optional values.
 
+## Project status
+
+### What has been done
+
+- Set up the Vite + React + TypeScript arcade structure.
+- Added/updated authentication context and session handling.
+- Added game registry entries and puzzle game support.
+- Fixed the codebreaker RNG generation bug that could stall unique-secret generation.
+- Ran the project test suite locally: `npm test` is currently passing.
+
+### What still needs to be done
+
+- Complete any remaining browser-level/manual QA checks after deployment or local preview.
+- Confirm end-to-end flow for authentication, save data, and game sessions in a live environment.
+- Review remaining UX polish and accessibility items before release.
+- Finish any outstanding production or PWA validation tasks.
+
+### Important note
+
+> The full end-to-end test work is still marked as pending and must be completed later. Do not assume the project is fully validated until that checklist is complete.
+
+> Current local unit coverage is green, but the broader test/QA checklist still needs follow-up in the target environment.
+
 ### Project structure
 
 - `src/engine/` — UI-independent game search and shared engine types.
