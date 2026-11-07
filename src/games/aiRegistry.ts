@@ -157,5 +157,5 @@ export const aiRegistry: Record<WorkerGameId, WorkerAiEntry> = {
 };
 
 export function isWorkerGameId(value: string): value is WorkerGameId {
-  return Object.hasOwn(aiRegistry, value);
+  return Object.prototype.hasOwnProperty.call(aiRegistry, value);
 }
